@@ -223,7 +223,7 @@ textColour = 0;
 #filename = 'testcaseTracks.dat';
 #filename = 'OutputPos00_Movie0000-BrightnessContrast/TrackRodsOutput/tracks.dat';
 #trackFilename = '../Data/171201-DDM/Output-Pos01_Movie0000/trackRods2DtOutput/tracks.dat';
-trackFilename = '../../../../../../Volumes/CBOGGONUSB/Data/Output-Pos00_Movie0004/trackRods2DtOutput/tracks.dat';
+trackFilename = '../../../../../../Volumes/CBOGGONUSB/Data/Output-Pos00_Movie0005/trackRods2DtOutput/tracks.dat';
 
 
 #Read in tracking data
@@ -256,8 +256,8 @@ B = produceLabelledImages(textSize, initialFrameNum, labelOffset);
 #positionImagesDir = "../Data/171201-DDM/Output-Pos01_Movie0000/findRods2DtOutput/"
 #outputImageDir = "../Data/171201-DDM/Output-Pos01_Movie0000/findRods2DtOutput-WithLabels/"
 
-positionImagesDir = "../../../../../../Volumes/CBOGGONUSB/Data/Output-Pos00_Movie0004/findRods2DtOutput/"
-outputImageDir = "../../../../../../Volumes/CBOGGONUSB/Data/Output-Pos00_Movie0004/findRods2DtOutput-WithTrajectories/"
+positionImagesDir = "../../../../../../Volumes/CBOGGONUSB/Data/Output-Pos00_Movie0005/findRods2DtOutput/"
+outputImageDir = "../../../../../../Volumes/CBOGGONUSB/Data/Output-Pos00_Movie0005/findRods2DtOutput-WithTrajectories/"
 
 try:
     os.stat(outputImageDir)
