@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from toolsForBugs import readCoordinateFile     #to read positions.dat
 from toolsForBugs import readTrackingFile       #to read tracks.dat
 from scipy.optimize import curve_fit
+import sys
 
 ##########################################################################################################
 ## Define functions
@@ -374,6 +375,24 @@ class analyseTrajectories:
 	#plt.show()
         return
 
+    def plotHistogramWithCurveFit(self, A, data, xlbl='bins', ylbl='Frequency'):
+        bin_heights, bin_borders, _ = plt.hist(data, bins='auto', label='histogram')
+        bin_centers = bin_borders[:-1] + np.diff(bin_borders) / 2
+        popt, _ = curve_fit(A.gaussian, bin_centers, bin_heights, p0=[1., 0., 1.])
+
+        x_interval_for_fit = np.linspace(bin_borders[0], bin_borders[-1], 10000)
+        plt.plot(x_interval_for_fit, A.gaussian(x_interval_for_fit, *popt), label='fit')
+        plt.legend()
+        plt.xlabel(xlbl);
+        plt.ylabel(ylbl);
+        
+        return
+
+    #Gaussian function
+    def gaussian(x, x0, y0, sigma):
+        p = [x0, y0, sigma]
+        return p[1]* np.exp(-((x-p[0])/p[2])**2)
+
     # Plot up to five sets of data on same graph 
     def plotDataSets(self, x0, y0, label0, x1=None, y1=None, label1=None, x2=None, y2=None, label2=None, x3=None, y3=None, label3=None, x4=None, y4=None, label4=None, title=None, xlbl=None, ylbl=None):
         plt.figure()
@@ -445,6 +464,14 @@ class analyseTrajectories:
         #plt.savefig(outputPlotName)
         #plt.show()
 
+
+    # write values to file
+    def writeToFile(self, filename, data):
+        myFile = open(filename,'w')
+        myFile.write('i Pdf\n\n');    
+        for i in range(0,len(data)): myFile.write('%d           %f\n' % (i, data[i]));
+        myFile.close()
+
 ##########################################################################################################
 ## Main Program begins here
 ##########################################################################################################
@@ -469,6 +496,10 @@ pixelsToMicrons = 0.702;    # For x20 Mag
 #filename = '../Data/171201-DDM/Output-Pos01_Movie0000/trackRods2DtOutput/tracks.dat';
 #filename = '../../../../../../Volumes/CBOGGONUSB/Data/Output-Pos00_Movie0004/trackRods2DtOutput/tracks.dat';
 #filename = '../../../../../../Volumes/CBOGGONUSB/Data/Output-Pos00_Movie0004/trackRods2DtOutput/tracks.dat';
+
+#Import filename from terminal
+filename = sys.argv[1];      #imports as string.
+outputFilename = sys.argv[2];
 
 
 #Read in tracking data
@@ -499,6 +530,28 @@ displacementArrayByFrame_micrometers = pixelsToMicrons*displacementArrayByFrame;
 # Plot distribution of velocities
 A.plotHistogram(AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers)');
 
+# Fit gaussian to data:
+A.plotHistogramWithCurveFit(A, AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers)');
+
+
+# Initialization parameters
+p0 = [1., 1., 1.]
+# Fit the data with the function
+fit, tmp = curve_fit(A.gauss, x, y, p0=p0)
+
+
+# Plot the results
+plt.title('Fit parameters:\n x0=%.2e y0=%.2e sigma=%.2e' % (fit[0], fit[1], fit[2]))
+# Data
+plt.plot(x, y, 'r--')
+# Fitted function
+x_fine = np.linspace(xe[0], xe[-1], 100)
+plt.plot(x_fine, gauss(x_fine, fit[0], fit[1], fit[2]), 'b-')
+plt.savefig('Gaussian_fit.png')
+plt.show()
+
+# Output average velocity
+A.writeToFile(outputFilename, data);
 
 
 
