@@ -501,6 +501,7 @@ A.plotHistogram(AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers
 
 
 
+
 # Plot velocities and displacements throughout trajectories
 #A.plotRandomTrajectories(A, velocityArrayByFrame_micrometers, 'time (seconds)', 'Velocity (micrometers/second)', traj2=displacementArrayByFrame_micrometers, xlbl2='time (seconds)', ylbl2='Displacement (micrometers)');
 
@@ -511,23 +512,13 @@ A.plotHistogram(AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers
 
 
 
-#analyse lysis event:
-
-
-### Get trajectories, then calculate cumulative velocity of trajectories and apply running average.
-# Define threshold for which if average velocity drops significantly. Save these trajectories and cumulative velocities of them. Velocities should fall to zero, within a certain error.
-# Calculate time between drop and end of trajectory. If velocity recovers again, don't save the trajectory. Save also the ID and the frame so can check them by eye.
-# calculate number of frames/time between stop and end of trajectory and plot stop time.
-
-#lysisTraj, lysisVelocityArray, nonLysisTraj, nonLysisVelocityArray = A.getLysisTrajectories(A, BIGLIST);
-
-## Plot displacements throughout trajectories
-#A.plotRandomTrajectories(A, lysisVelocityArray, 'time (seconds)', 'Velocity (pixels)');
-
-
 #ID = 295;
 #A.plotTrajWithSpecificID(A, BIGLIST, ID);
 #A.plotTrajWithSpecificID(A, BIGLIST, ID, plotRodLength=1);
 
 plt.show()
+
+
+#import sys
+#a = sys.argv[1] #imports as string.
 
