@@ -141,7 +141,8 @@ class analyseTrajectories:
         r = np.zeros(int(len(xPositions)/(self.NumFramesToAverageOver)-1));
         counter = 0;
         for i in range(0, len(r)):
-            r[i] = abs(np.sqrt(xPositions[counter+self.NumFramesToAverageOver]**2 + yPositions[counter+self.NumFramesToAverageOver]**2) - np.sqrt(xPositions[counter]**2 + yPositions[counter]**2));
+            #r[i] = abs(np.sqrt(xPositions[counter+self.NumFramesToAverageOver]**2 + yPositions[counter+self.NumFramesToAverageOver]**2) - np.sqrt(xPositions[counter]**2 + yPositions[counter]**2));
+	    r[i] = np.sqrt(abs((xPositions[counter+self.NumFramesToAverageOver] - xPositions[counter])**2 + (yPositions[counter+self.NumFramesToAverageOver] - yPositions[counter])**2)); 
             counter = counter + self.NumFramesToAverageOver;
 
         return r

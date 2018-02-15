@@ -273,7 +273,7 @@ class analyseTrajectories:
         r = np.zeros(int(len(xPositions)/self.NumFramesToAverageOver)-1);
         counter = 0;
         for i in range(0, len(r)):
-            r[i] = abs(np.sqrt(xPositions[counter+self.NumFramesToAverageOver]**2 + yPositions[counter+self.NumFramesToAverageOver]**2) - np.sqrt(xPositions[counter]**2 + yPositions[counter]**2));
+            r[i] = np.sqrt(abs((xPositions[counter+self.NumFramesToAverageOver] - xPositions[counter])**2 + (yPositions[counter+self.NumFramesToAverageOver] - yPositions[counter])**2)); 
             counter = counter + self.NumFramesToAverageOver;
         
         return r
@@ -295,12 +295,13 @@ class analyseTrajectories:
 
         #Calculate distance between points
         displacementArray = A.calcDistBetweenPoints(xPositions, yPositions);
-        AvDisplacement = np.mean(displacementArray)/len(displacementArray);
+        AvDisplacement = np.mean(displacementArray);
         AvDisplacement_error = np.std(displacementArray)/np.sqrt(len(displacementArray));   #Standard error on mean
         
-        velocityArray = displacementArray/self.timePerFrame;
-        AvVelocity = AvDisplacement/self.timePerFrame;
-        AvVelocity_error = np.std(AvVelocity_error)/np.sqrt(len(AvVelocity_error));   #Standard error on mean
+        velocityArray = displacementArray/(self.NumFramesToAverageOver*self.timePerFrame);
+        AvVelocity = np.mean(velocityArray);
+        #AvVelocity = AvDisplacement/(self.NumFramesToAverageOver*self.timePerFrame);
+        AvVelocity_error = np.std(velocityArray)/np.sqrt(len(velocityArray));   #Standard error on mean
 
         return AvVelocity, displacementArray, velocityArray
 
@@ -376,12 +377,12 @@ class analyseTrajectories:
         return
 
     def plotHistogramWithCurveFit(self, A, data, xlbl='bins', ylbl='Frequency'):
-        bin_heights, bin_borders, _ = plt.hist(data, bins='auto', label='histogram')
+        bin_heights, bin_borders, _ = plt.hist(data, bins=100, label='histogram')
         bin_centers = bin_borders[:-1] + np.diff(bin_borders) / 2
-        popt, _ = curve_fit(A.gaussian, bin_centers, bin_heights, p0=[1., 0., 1.])
+        popt, _ = curve_fit(A.gaussian, bin_centers, bin_heights, p0=[1., 1., 1.])
 
         x_interval_for_fit = np.linspace(bin_borders[0], bin_borders[-1], 10000)
-        plt.plot(x_interval_for_fit, A.gaussian(x_interval_for_fit, *popt), label='fit')
+        plt.plot(x_interval_for_fit, A.gaussian(x_interval_for_fit, *popt), label='gaussian fit')
         plt.legend()
         plt.xlabel(xlbl);
         plt.ylabel(ylbl);
@@ -389,7 +390,7 @@ class analyseTrajectories:
         return
 
     #Gaussian function
-    def gaussian(x, x0, y0, sigma):
+    def gaussian(self, x, x0, y0, sigma):
         p = [x0, y0, sigma]
         return p[1]* np.exp(-((x-p[0])/p[2])**2)
 
@@ -478,18 +479,21 @@ class analyseTrajectories:
 
 #Declare Variables
 NumFramesToAverageOver = 3; #Average over a number of frames to reduce the random effects of diffusion on the calculate swimming velocity
-minTrajLen = 30*NumFramesToAverageOver;
+minTrajLen = 10*NumFramesToAverageOver;
 fps = 50;
 timePerFrame = 1./fps;
 pixelsToMicrons = 0.702;    # For x20 Mag
 #pixelsToMicrons = 0.354;    #UNKNOWN FOR X40 MAG
 
-#minStopTimeThreshold = 1*fps;       #minimum length of time a bacteria is expected to stop before lysing. (frames)
-#minStopVelocityThreshold = 18;      #minimum drop in average velocity that defines a lysis event (micrometers per second)
-#stoppingVelocityThreshold = 0.2
-#diffusionThreshold = 1;     #Above this threshold, bacteria considered to still be swimming.
-#B = analyseLysisEvents(A)
+minStopTimeThreshold = 1*fps;       #minimum length of time a bacteria is expected to stop before lysing. (frames)
+minStopVelocityThreshold = 18;      #minimum drop in average velocity that defines a lysis event (micrometers per second)
+stoppingVelocityThreshold = 0.2
+D = 0.34;    #Diffusion constant micrometers/second
+diffusionThreshold = (1/(float(NumFramesToAverageOver)*timePerFrame))*np.sqrt(4*D*(1/pixelsToMicrons)**2*(float(NumFramesToAverageOver)*timePerFrame));     #Above this threshold, bacteria considered to still be swimming.
 
+
+
+####  Mac Filenames ####
 
 #filename = 'testcaseTracks.dat';
 #filename = 'OutputPos00_Movie0000-BrightnessContrast/TrackRodsOutput/tracks.dat';
@@ -497,9 +501,17 @@ pixelsToMicrons = 0.702;    # For x20 Mag
 #filename = '../../../../../../Volumes/CBOGGONUSB/Data/Output-Pos00_Movie0004/trackRods2DtOutput/tracks.dat';
 #filename = '../../../../../../Volumes/CBOGGONUSB/Data/Output-Pos00_Movie0004/trackRods2DtOutput/tracks.dat';
 
-#Import filename from terminal
-filename = sys.argv[1];      #imports as string.
-outputFilename = sys.argv[2];
+
+####  Ubuntu Filenames ####
+
+filename = '../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-135326-AsImageSequences/Output-Pos00_Movie0001/filterTracks2DtOutput/tracks_fixed.dat';
+outputFilename = '../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-135326-AsImageSequences/Output-Pos00_Movie0001/DDMTrackingOutput';
+
+
+### Import filename from terminal ###
+
+#filename = sys.argv[1];      #imports as string.
+#outputFilename = sys.argv[2];
 
 
 #Read in tracking data
@@ -524,34 +536,34 @@ AvVelocityArray, velocityArray, displacementArray = A.calcAverageVelocitiesForAl
 
 # Calculate average velocity in micrometers/second
 AvVelocityArray_micrometers = pixelsToMicrons*AvVelocityArray;
-velocityArrayByFrame_micrometers = pixelsToMicrons*velocityArrayByFrame;
-displacementArrayByFrame_micrometers = pixelsToMicrons*displacementArrayByFrame;
+velocityArray_micrometers = pixelsToMicrons*velocityArray;
+displacementArray_micrometers = pixelsToMicrons*displacementArray;
 
 # Plot distribution of velocities
-A.plotHistogram(AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers)');
+#A.plotHistogram(AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers)');
 
 # Fit gaussian to data:
 A.plotHistogramWithCurveFit(A, AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers)');
 
 
 # Initialization parameters
-p0 = [1., 1., 1.]
+#p0 = [1., 1., 1.]
 # Fit the data with the function
-fit, tmp = curve_fit(A.gauss, x, y, p0=p0)
+#fit, tmp = curve_fit(A.gauss, x, y, p0=p0)
 
 
 # Plot the results
-plt.title('Fit parameters:\n x0=%.2e y0=%.2e sigma=%.2e' % (fit[0], fit[1], fit[2]))
+#plt.title('Fit parameters:\n x0=%.2e y0=%.2e sigma=%.2e' % (fit[0], fit[1], fit[2]))
 # Data
-plt.plot(x, y, 'r--')
+#plt.plot(x, y, 'r--')
 # Fitted function
-x_fine = np.linspace(xe[0], xe[-1], 100)
-plt.plot(x_fine, gauss(x_fine, fit[0], fit[1], fit[2]), 'b-')
-plt.savefig('Gaussian_fit.png')
-plt.show()
+#x_fine = np.linspace(xe[0], xe[-1], 100)
+#plt.plot(x_fine, gauss(x_fine, fit[0], fit[1], fit[2]), 'b-')
+#plt.savefig('Gaussian_fit.png')
+#plt.show()
 
 # Output average velocity
-A.writeToFile(outputFilename, data);
+#A.writeToFile(outputFilename, data);
 
 
 
