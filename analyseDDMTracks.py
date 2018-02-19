@@ -215,7 +215,7 @@ class analyseTrajectories:
 #        return
 #
 
-    def __init__(self, minTrajLen, NumFramesToAverageOver, timePerFrame, pixelsToMicrons, minStopTimeThreshold, minStopVelocityThreshold, initialFrameNum, stoppingVelocityThreshold, diffusionThreshold, minSwimmingExponent):
+    def __init__(self, minTrajLen, NumFramesToAverageOver, timePerFrame, pixelsToMicrons, minStopTimeThreshold, minStopVelocityThreshold, initialFrameNum, stoppingVelocityThreshold, diffusionThreshold, minSwimmingExponent, minTauVals):
         self.timePerFrame = timePerFrame;   #For calculating the average velocity over one frame
         self.NumFramesToAverageOver = NumFramesToAverageOver;   #number of frames over which to calculate the displacement over before taking average.
         self.minTrajLen = minTrajLen;
@@ -226,6 +226,7 @@ class analyseTrajectories:
         self.stoppingVelocityThreshold = stoppingVelocityThreshold;     #fraction drop in average running velocity required to define stopping event.
         self.diffusionThreshold = diffusionThreshold;   #Stopped bacteria still diffuse. Above this threshold, bacteria considered still swimming.
         self.minSwimmingExponent = minSwimmingExponent;     #min value of k in function <r**2> = Ct^k to define swimmer. Ideally, k = 2 for swimmer, k = 1 for diffuser and k = 0 for adherer.
+        self.minTauVals = minTauVals;    #minimum number of of tau points used to calculate k for separating swimmers from diffusers.
 
     def calcAverageVelocitiesForAllTraj(self, A, BIGLIST):        
         '''
@@ -339,7 +340,7 @@ class analyseTrajectories:
         '''
         #tau = np.arange(len()/self.minTrajLen);
         #self.NumFramesToAverageOver
-        minTauRange = 2*self.NumFramesToAverageOver;
+        minTauRange = self.minTauVals*self.NumFramesToAverageOver;
 
         meanSquaredDispArray = np.zeros(int(len(xPositions)/minTauRange));
         tauArray = np.zeros(int(len(xPositions)/minTauRange));
@@ -517,6 +518,7 @@ class analyseTrajectories:
             popt, _ = curve_fit(A.gaussian, bin_centers, bin_heights, p0=[30., 10., 10.])
             lbl = 'gaussian fit';
             y_for_plot = A.gaussian(x_interval_for_fit, *popt); 
+            sigma = popt[2];
             
             print 'Gaussian fit with equation: P(v) = %f exp((v-%f/%f)**2)' % tuple(popt);
             
@@ -525,6 +527,9 @@ class analyseTrajectories:
             popt, _ = curve_fit(A.schulz, bin_centers, bin_heights, p0=[1., 2100, 30.])
             lbl = 'schulz fit';
             y_for_plot = A.schulz(x_interval_for_fit, *popt); 
+            v_bar = fit_params[2];
+            z = fit_params[1];
+            sigma = np.sqrt(v_bar**2/(z+1));
             
             print 'Schulz fit with equation: P(v) = (v**z/z!)*((z+1)/v_bar)**(z+1)*np.exp(-(v/v_bar)*(z+1)). Optimised constants: z_factorial = %f, z = %f, v_bar = %f' % tuple(popt); 
         
@@ -537,7 +542,7 @@ class analyseTrajectories:
         plt.xlabel(xlbl);
         plt.ylabel(ylbl);
         
-        return popt
+        return popt, sigma
 
     #Gaussian function
     def gaussian(self, x, x0, y0, sigma):
@@ -648,6 +653,7 @@ stoppingVelocityThreshold = 0.2
 D = 0.34;    #Diffusion constant micrometers/second
 diffusionThreshold = (1/(float(NumFramesToAverageOver)*timePerFrame))*np.sqrt(4*D*(1/pixelsToMicrons)**2*(float(NumFramesToAverageOver)*timePerFrame));     #Above this threshold, bacteria considered to still be swimming.
 minSwimmingExponent = 1.5;
+minTauVals = 2;
 
 
 
@@ -677,7 +683,7 @@ outputFilename = fileDir+'DDMTrackingOutputData.dat';
 #Read in tracking data
 BIGLIST, numberOfFrames = readTrackingFile(filename)
 initialFrameNum = int(BIGLIST[0][0, 0]);
-A = analyseTrajectories(minTrajLen, NumFramesToAverageOver, timePerFrame, pixelsToMicrons,  minStopTimeThreshold, minStopVelocityThreshold, initialFrameNum, stoppingVelocityThreshold, diffusionThreshold, minSwimmingExponent);
+A = analyseTrajectories(minTrajLen, NumFramesToAverageOver, timePerFrame, pixelsToMicrons,  minStopTimeThreshold, minStopVelocityThreshold, initialFrameNum, stoppingVelocityThreshold, diffusionThreshold, minSwimmingExponent, minTauVals);
 
 #BIGLIST, PROPERTIES = readCoordinateFile(filename)
 #print BIGLIST
@@ -700,10 +706,10 @@ displacementArray_micrometers = pixelsToMicrons*displacementArray;
 A.plotHistogram(k_exponentArray, xlbl='k');
 #A.plotHistogram(k_exponentArray, xlbl='k', xlim=np.array([-2., 4.]));
 
-# Fit gaussian to data:
-fit_params = A.plotHistogramWithCurveFit(A, AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers)');
-v_bar = fit_params[3];
-z = fit_params[2];
+# Fit distribution to data:
+fit_params, sigma = A.plotHistogramWithCurveFit(A, AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers)', fit='schulz');
+v_bar = fit_params[2];
+z = fit_params[1];
 
 
 # Output average velocity
