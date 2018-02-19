@@ -215,7 +215,7 @@ class analyseTrajectories:
 #        return
 #
 
-    def __init__(self, minTrajLen, NumFramesToAverageOver, timePerFrame, pixelsToMicrons, minStopTimeThreshold, minStopVelocityThreshold, initialFrameNum, stoppingVelocityThreshold, diffusionThreshold):
+    def __init__(self, minTrajLen, NumFramesToAverageOver, timePerFrame, pixelsToMicrons, minStopTimeThreshold, minStopVelocityThreshold, initialFrameNum, stoppingVelocityThreshold, diffusionThreshold, minSwimmingExponent):
         self.timePerFrame = timePerFrame;   #For calculating the average velocity over one frame
         self.NumFramesToAverageOver = NumFramesToAverageOver;   #number of frames over which to calculate the displacement over before taking average.
         self.minTrajLen = minTrajLen;
@@ -225,6 +225,7 @@ class analyseTrajectories:
         self.initialFrameNum = initialFrameNum;
         self.stoppingVelocityThreshold = stoppingVelocityThreshold;     #fraction drop in average running velocity required to define stopping event.
         self.diffusionThreshold = diffusionThreshold;   #Stopped bacteria still diffuse. Above this threshold, bacteria considered still swimming.
+        self.minSwimmingExponent = minSwimmingExponent;     #min value of k in function <r**2> = Ct^k to define swimmer. Ideally, k = 2 for swimmer, k = 1 for diffuser and k = 0 for adherer.
 
     def calcAverageVelocitiesForAllTraj(self, A, BIGLIST):        
         '''
@@ -243,30 +244,38 @@ class analyseTrajectories:
         displacementArray = [];     #Array of displacements throughout trajectories
         velocityArray = [];   #Array of velocities throughout trajectories
         trajID = [];  
+        k_exponentArray = [];
         i = 0;
         for i in range(0, len(BIGLIST)):   # iterate through trajectories
             if(len(BIGLIST[i]) < self.minTrajLen):
                 continue;
             else:
-                temp_avVelocityAllTraj, temp_displacementArray, temp_velocityArray = A.calcAverageParticleVelocity(A, BIGLIST[i]);
+                temp_avVelocityAllTraj, temp_displacementArray, temp_velocityArray, k_exponent = A.calcAverageParticleVelocity(A, BIGLIST[i]);
                 
-                # Filter out non-swimmers and erroneous points, i.e defects that are detected as bacteria:
-                if (temp_avVelocityAllTraj < self.diffusionThreshold):
+                if (k_exponent == -10):
+                    print 'curve fit failed for trajID = '+str(i);
                     continue;
-
-                else:
+                
+                elif (k_exponent > self.minSwimmingExponent):
                     avVelocityAllTraj.append(temp_avVelocityAllTraj);
                     displacementArray.append(temp_displacementArray);
                     velocityArray.append(temp_velocityArray);
                     trajID.append(i);
+                    k_exponentArray.append(k_exponent);
+
+                else:
+                    k_exponentArray.append(k_exponent);
+                    continue;
 
         #Convert lists to numpy arrays
         avVelocityAllTraj = np.asarray(avVelocityAllTraj);
         displacementArray = np.asarray(displacementArray);
         velocityArray = np.asarray(velocityArray);
-
-        return avVelocityAllTraj, velocityArray, displacementArray
+        k_exponentArray = np.asarray(k_exponentArray);
+        
+        return avVelocityAllTraj, velocityArray, displacementArray, k_exponentArray 
     
+
     def calcDistBetweenPoints(self, xPositions, yPositions):
         '''
         Calls: nothing
@@ -303,6 +312,8 @@ class analyseTrajectories:
 
         #Calculate distance between points
         displacementArray = A.calcDistBetweenPoints(xPositions, yPositions);
+            
+        #Calculate average velocity and distance travelled by particle
         AvDisplacement = np.mean(displacementArray);
         AvDisplacement_error = np.std(displacementArray)/np.sqrt(len(displacementArray));   #Standard error on mean
         
@@ -311,7 +322,110 @@ class analyseTrajectories:
         #AvVelocity = AvDisplacement/(self.NumFramesToAverageOver*self.timePerFrame);
         AvVelocity_error = np.std(velocityArray)/np.sqrt(len(velocityArray));   #Standard error on mean 
 
-        return AvVelocity, displacementArray, velocityArray
+        #Calculate average mean squared displacement as a function of tau
+        meanSquaredDispArray, tauArray = A.calcMeanSquaredDisplacement(xPositions, yPositions);
+
+        #Determine if trajectory is for swimmers, diffusers or adherers
+        k_exponent = A.separateDiffusersAndSwimmers(A, meanSquaredDispArray, tauArray);
+        
+        return AvVelocity, displacementArray, velocityArray, k_exponent
+
+
+    def calcMeanSquaredDisplacement(self, xPositions, yPositions):
+        '''
+        Calculated mean squared displacement as a function of tau.
+        
+        Returns: array of average mean squared velocities with increasing values of tau.
+        '''
+        #tau = np.arange(len()/self.minTrajLen);
+        #self.NumFramesToAverageOver
+        minTauRange = 2*self.NumFramesToAverageOver;
+
+        meanSquaredDispArray = np.zeros(int(len(xPositions)/minTauRange));
+        tauArray = np.zeros(int(len(xPositions)/minTauRange));
+
+        tau = self.NumFramesToAverageOver;
+        for j in range(0, int(len(xPositions)/minTauRange)):
+            counter = 0;
+            temp_array = np.zeros(int(len(xPositions)/tau));
+
+            if (len(xPositions) % tau == 0):
+                #tau divides len(xPositions) exactly so will get an index error if don't account for this in defintion of i in for loop.
+                for i in range(0, int(len(xPositions)/tau)-1):
+                    temp_array[i] = abs((xPositions[counter+tau] - xPositions[counter])**2 + (yPositions[counter+tau] - yPositions[counter])**2);
+                    counter = counter + tau;
+                
+            else:
+                #don't need to worry about index error so can get extra tau point in data with this branch.
+                for i in range(0, int(len(xPositions)/tau)):
+                    temp_array[i] = abs((xPositions[counter+tau] - xPositions[counter])**2 + (yPositions[counter+tau] - yPositions[counter])**2);
+                    counter = counter + tau;
+            
+            meanSquaredDispArray[j] = np.mean(temp_array);
+            tauArray[j] = tau;
+            tau = tau + self.NumFramesToAverageOver;
+
+        return meanSquaredDispArray, tauArray
+
+#    
+#        squaredDisplacementArray = displacementArray**2;
+#        cumulativeMeanSquaredDispArray = np.zeros(len(displacementArray));
+#        counter=3;
+#        cumulativeMeanSquaredDispArray[0] = 0;
+#        for i in range(0, len(displacementArray)):
+#            
+#            cumulativeMeanSquaredDispArray[i] = (1/len(squaredDisplacementArray[0:counter]))*np.sum(squaredDisplacementArray[0:counter]);
+#            counter = counter+3;
+#            #cumulativeMeanSquaredDispArray[i] = (1/len(squaredDisplacementArray[0:i+1]))*np.sum(squaredDisplacementArray[0:i+1]);
+#            #cumulativeMeanSquaredDispArray[i] = (np.sum(displacementArray[0:i+1]))**2;
+#
+#        return cumulativeMeanSquaredDispArray
+
+
+    def separateDiffusersAndSwimmers(self, A, meanSquaredDisplacementArray, tauArray):
+        
+        t = tauArray*self.timePerFrame;
+        #t = self.timePerFrame*3*self.NumFramesToAverageOver*np.arange(len(cumulativeMeanSquaredDisplacementArray));
+        init_vals = [1, 1];     # for [amp, cen, wid]
+
+        #print tauArray
+        #print meanSquaredDisplacementArray
+
+        try:
+            best_vals, covar = curve_fit(A.fitDiffusersAndSwimmers, t, meanSquaredDisplacementArray, p0=init_vals);
+            #print(best_vals);
+            k = best_vals[1];
+            C = best_vals[0];
+        
+        except RuntimeError:
+            print("Optimal parameters not found: Number of calls to function has reached maxfev = 600.\n");
+            k = -10; 
+        
+        return k
+        
+#        from numpy import random
+#
+#        i = 0;
+#        k = [];
+#        C = [];
+#        while (i < len(im.columns)):
+#            try:
+#                x = im[im.columns[i]];
+#            except KeyError:
+#                print("im[im.columns[i]] is not defined. i = "+str(i));
+#                i = i+1;
+#                continue;
+#            else:
+#                #print("sure, it was defined. i = "+str(i));
+#                x = x[np.logical_not(np.isnan(x))];  #remove NaN from array
+#                y = fitDiffusersAndSwimmers(x, 2.33, 0.21) + random.normal(0, 0.2, len(x));
+#                init_vals = [1, 1];     # for [amp, cen, wid]
+#                best_vals, covar = curve_fit(fitHist, x, y, p0=init_vals);
+#                print(best_vals);
+#                k.append(best_vals[1])
+#                C.append(best_vals[0])
+#                i = i+1;
+        return
  
     #def plotRandomTrajectories(self, A, traj, xlbl='Iteration (iterates over '+str(self.NumFramesToAverageOver)+' Frame(s))', ylbl='Displacement Over '+str(self.NumFramesToAverageOver)+' Frame (pixels)'):
     def plotRandomTrajectories(self, A, traj, xlbl, ylbl, traj2=None, xlbl2=None, ylbl2=None):
@@ -374,33 +488,67 @@ class analyseTrajectories:
         return
 
 
+    ### Calculate historgram to separate diffusers from bacteria stuck to surface
+    def fitDiffusersAndSwimmers(self, x, C, k):
+        "Equation to fit data: y = Cx^k"
+        return (C*(x**k))
+
+    
     # Plot distribution of velocities
-    def plotHistogram(self, data, xlbl='bins', ylbl='Frequency'):
+    def plotHistogram(self, data, xlbl='bins', ylbl='Frequency', xlim=np.array(None)):
+        plt.figure()
 	plt.hist(data[:], bins=200)
 	plt.xlabel(xlbl);
 	plt.ylabel(ylbl);
-	#plt.savefig('outputHistogram.pdf')
+        if (xlim.all() != None):
+            plt.xlim(xlim[0], xlim[1]);
+
+        #plt.savefig('outputHistogram.pdf')
 	#plt.show()
         return
 
-    def plotHistogramWithCurveFit(self, A, data, xlbl='bins', ylbl='Frequency'):
+    def plotHistogramWithCurveFit(self, A, data, xlbl='bins', ylbl='Frequency', fit='schulz'):
+        plt.figure()
         bin_heights, bin_borders, _ = plt.hist(data, bins=100, label='histogram')
         bin_centers = bin_borders[:-1] + np.diff(bin_borders) / 2
-        popt, _ = curve_fit(A.gaussian, bin_centers, bin_heights, p0=[1., 1., 1.])
+        x_interval_for_fit = np.linspace(bin_borders[0], bin_borders[-1], 10000);
+        
+        if (fit == 'gaussian'):
+            popt, _ = curve_fit(A.gaussian, bin_centers, bin_heights, p0=[30., 10., 10.])
+            lbl = 'gaussian fit';
+            y_for_plot = A.gaussian(x_interval_for_fit, *popt); 
+            
+            print 'Gaussian fit with equation: P(v) = %f exp((v-%f/%f)**2)' % tuple(popt);
+            
 
-        x_interval_for_fit = np.linspace(bin_borders[0], bin_borders[-1], 10000)
-        plt.plot(x_interval_for_fit, A.gaussian(x_interval_for_fit, *popt), label='gaussian fit')
-        plt.legend()
+        elif (fit == 'schulz'):
+            popt, _ = curve_fit(A.schulz, bin_centers, bin_heights, p0=[1., 2100, 30.])
+            lbl = 'schulz fit';
+            y_for_plot = A.schulz(x_interval_for_fit, *popt); 
+            
+            print 'Schulz fit with equation: P(v) = (v**z/z!)*((z+1)/v_bar)**(z+1)*np.exp(-(v/v_bar)*(z+1)). Optimised constants: z_factorial = %f, z = %f, v_bar = %f' % tuple(popt); 
+        
+        else:
+            print 'ERROR: Undefined distribution for fit';
+            return
+
+        plt.plot(x_interval_for_fit, y_for_plot, label=lbl);
+        plt.legend();
         plt.xlabel(xlbl);
         plt.ylabel(ylbl);
         
-        return
+        return popt
 
     #Gaussian function
     def gaussian(self, x, x0, y0, sigma):
         p = [x0, y0, sigma]
         return p[1]* np.exp(-((x-p[0])/p[2])**2)
 
+    # Schulz distribution
+    def schulz(self, v, z, z_factorial, v_bar):
+        p = [z_factorial, z, v_bar];        
+        #return p[0]*(v/p[2])**p[1]*np.exp(-(p[1]+1)*(v/p[2]))
+        return (v**p[1]/p[0])*((p[1]+1)/p[2])**(p[1]+1)*np.exp(-(v/p[2])*(p[1]+1))
 
     # Plot up to five sets of data on same graph 
     def plotDataSets(self, x0, y0, label0, x1=None, y1=None, label1=None, x2=None, y2=None, label2=None, x3=None, y3=None, label3=None, x4=None, y4=None, label4=None, title=None, xlbl=None, ylbl=None):
@@ -488,7 +636,7 @@ class analyseTrajectories:
 
 #Declare Variables
 NumFramesToAverageOver = 3; #Average over a number of frames to reduce the random effects of diffusion on the calculate swimming velocity
-minTrajLen = 20*NumFramesToAverageOver;
+minTrajLen = 10*NumFramesToAverageOver;
 fps = 50;
 timePerFrame = 1./fps;
 pixelsToMicrons = 0.702;    # For x20 Mag
@@ -499,6 +647,7 @@ minStopVelocityThreshold = 18;      #minimum drop in average velocity that defin
 stoppingVelocityThreshold = 0.2
 D = 0.34;    #Diffusion constant micrometers/second
 diffusionThreshold = (1/(float(NumFramesToAverageOver)*timePerFrame))*np.sqrt(4*D*(1/pixelsToMicrons)**2*(float(NumFramesToAverageOver)*timePerFrame));     #Above this threshold, bacteria considered to still be swimming.
+minSwimmingExponent = 1.5;
 
 
 
@@ -528,7 +677,7 @@ outputFilename = fileDir+'DDMTrackingOutputData.dat';
 #Read in tracking data
 BIGLIST, numberOfFrames = readTrackingFile(filename)
 initialFrameNum = int(BIGLIST[0][0, 0]);
-A = analyseTrajectories(minTrajLen, NumFramesToAverageOver, timePerFrame, pixelsToMicrons,  minStopTimeThreshold, minStopVelocityThreshold, initialFrameNum, stoppingVelocityThreshold, diffusionThreshold);
+A = analyseTrajectories(minTrajLen, NumFramesToAverageOver, timePerFrame, pixelsToMicrons,  minStopTimeThreshold, minStopVelocityThreshold, initialFrameNum, stoppingVelocityThreshold, diffusionThreshold, minSwimmingExponent);
 
 #BIGLIST, PROPERTIES = readCoordinateFile(filename)
 #print BIGLIST
@@ -537,7 +686,7 @@ A = analyseTrajectories(minTrajLen, NumFramesToAverageOver, timePerFrame, pixels
 
 
 #### Calculate velocity of particles
-AvVelocityArray, velocityArray, displacementArray = A.calcAverageVelocitiesForAllTraj(A, BIGLIST);
+AvVelocityArray, velocityArray, displacementArray, k_exponentArray = A.calcAverageVelocitiesForAllTraj(A, BIGLIST);
 
 # Calculate average velocity in micrometers/second
 AvVelocityArray_micrometers = pixelsToMicrons*AvVelocityArray;
@@ -545,15 +694,23 @@ velocityArray_micrometers = pixelsToMicrons*velocityArray;
 displacementArray_micrometers = pixelsToMicrons*displacementArray;
 
 # Plot distribution of velocities
-A.plotHistogram(AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers)');
+#A.plotHistogram(AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers)');
+
+# Plot distribution of k_exponents
+A.plotHistogram(k_exponentArray, xlbl='k');
+#A.plotHistogram(k_exponentArray, xlbl='k', xlim=np.array([-2., 4.]));
 
 # Fit gaussian to data:
-#A.plotHistogramWithCurveFit(A, AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers)');
-
+fit_params = A.plotHistogramWithCurveFit(A, AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers)');
+v_bar = fit_params[3];
+z = fit_params[2];
 
 
 # Output average velocity
 #A.writeToFile(outputFilename, data);
+
+
+
 
 
 
@@ -562,9 +719,6 @@ A.plotHistogram(AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers
 
 # Plot displacements throughout trajectories
 #A.plotRandomTrajectories(A, displacementArrayByFrame_micrometers, 'time (seconds)', 'Displacement Over '+str(NumFramesToAverageOver)+' Frame (micrometers)');
-
-
-
 
 
 #ID = 295;
