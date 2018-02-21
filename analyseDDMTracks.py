@@ -509,8 +509,8 @@ class analyseTrajectories:
         return
 
     def plotHistogramWithCurveFit(self, A, data, xlbl='bins', ylbl='Frequency', fit='schulz'):
-        popt = [-10, -10, -10];
-	sigma = -10;
+        popt_RuntimeError = [-10, -10, -10];
+	sigma_RuntimeError = -10;
 
 	plt.figure()
         bin_heights, bin_borders, _ = plt.hist(data, bins=100, label='histogram')
@@ -523,29 +523,30 @@ class analyseTrajectories:
             	lbl = 'gaussian fit';
             	y_for_plot = A.gaussian(x_interval_for_fit, *popt); 
             	sigma = popt[2];
-           	print 'Gaussian fit with equation: P(v) = %f exp((v-%f/%f)**2)' % tuple(popt);
+           	print 'Gaussian fit with equation: P(v) = %f exp((v-%f/%f)**2) \n' % tuple(popt);
 		
 	    except RuntimeError:
-		print 'RuntimeError: Optimal parameters not found: Number of calls to function has reached maxfev = 800.';
-		return popt, sigma
+		print 'RuntimeError: Optimal parameters not found: Number of calls to function has reached maxfev = 800. \n';
+		return popt_RuntimeError, sigma_RuntimeError
             
 
         elif (fit == 'schulz'):
 	    try:
-            	popt, _ = curve_fit(A.schulz, bin_centers, bin_heights, p0=[1., 2100, 30.])
+            	popt, _ = curve_fit(A.schulz, bin_centers, bin_heights, p0=[1., 2100, 40.])
             	lbl = 'schulz fit';
             	y_for_plot = A.schulz(x_interval_for_fit, *popt); 
             	v_bar = popt[2];
             	z = popt[1];
-            	sigma = np.sqrt(v_bar**2/(z+1));
-            	print 'Schulz fit with equation: P(v) = (v**z/z!)*((z+1)/v_bar)**(z+1)*np.exp(-(v/v_bar)*(z+1)). Optimised constants: z_factorial = %f, z = %f, v_bar = %f' % tuple(popt); 
+            	variance = np.sqrt(v_bar**2/(z+1));
+            	sigma = np.sqrt(variance)/np.sqrt(len(y_for_plot));     #Standard error on the mean.
+                print 'Schulz fit with equation: P(v) = (v**z/z!)*((z+1)/v_bar)**(z+1)*np.exp(-(v/v_bar)*(z+1)). Optimised constants: z_factorial = %f, z = %f, v_bar = %f \n' % tuple(popt); 
 		
 	    except RuntimeError:
-		print 'RuntimeError: Optimal parameters not found: Number of calls to function has reached maxfev = 800.';
-        	return popt, sigma
+		print 'RuntimeError: Optimal parameters not found: Number of calls to function has reached maxfev = 800.\n';
+        	return popt_RuntimeError, sigma_RuntimeError
 
         else:
-            print 'ERROR: Undefined distribution for fit';
+            print 'ERROR: Undefined distribution for fit\n';
             return
 
 	# Curve fit succeeded so plot and return fit_params, popt and sigma
@@ -594,13 +595,10 @@ class analyseTrajectories:
 
 
     # Plot up to five sets of data with y error bars on same graph 
+#    def plotDataSetsWithErrorBars(self, x0, y0, label0, y0_error=np.array(None), x1=np.array(None), y1=np.array(None), label1=None, y1_error=np.array(None), x2=np.array(None), y2=np.array(None), label2=None, y2_error=np.array(None), x3=np.array(None), y3=np.array(None), label3=None, y3_error=np.array(None), x4=np.array(None), y4=np.array(None), label4=None, y4_error=np.array(None), title=None, xlbl=None, ylbl=None):
     def plotDataSetsWithErrorBars(self, x0, y0, label0, y0_error=np.array(None), x1=np.array(None), y1=np.array(None), y1_error=np.array(None), label1=None, x2=np.array(None), y2=np.array(None), y2_error=np.array(None), label2=None, x3=np.array(None), y3=np.array(None), y3_error=np.array(None), label3=None, x4=np.array(None), y4=np.array(None), y4_error=np.array(None), label4=None, title=None, xlbl=None, ylbl=None):
-        
         plt.figure()
        
-        print 'y0_error:'
-        print y0_error
-
         if (y0_error.all() == None):
             plt.plot(x0, y0, 'x-', label=label0)
         else:
@@ -632,8 +630,9 @@ class analyseTrajectories:
         
         if(title != None): plt.suptitle(title);
         if(xlbl != None): plt.xlabel(xlbl);
-        if(ylbl != None): plt.ylabel(ylbl)
-        plt.legend(loc='upper right');
+        if(ylbl != None): plt.ylabel(ylbl);
+#        if(y1.all() != None): plt.legend(loc='upper right');
+        #plt.legend(loc='upper right');
         #plt.rc('font', family='serif', size=15);
         #plt.savefig(outputPlotName)
         #plt.show()

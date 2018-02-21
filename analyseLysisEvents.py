@@ -16,6 +16,8 @@ class analyseTrajectories:
         #Get xPositions and yPositions from BIGLIST
         lysisTraj = [];
         lysisVelocityArray = [];
+        stopTimeArray = [];
+        lysisDirCorrelationArray = [];
         nonLysisTraj = [];
         nonLysisVelocityArray = [];
 
@@ -33,6 +35,8 @@ class analyseTrajectories:
                 if (stopTime_frame != -1):
                     lysisTraj.append(i);
                     lysisVelocityArray.append(velocityArray);
+                    stopTimeArray.append(stopTime_frame);
+                    lysisDirCorrelationArray.append(directionCorrelationArray);
 
                 else:
                     nonLysisTraj.append(i);
@@ -40,10 +44,13 @@ class analyseTrajectories:
         
         lysisTraj = np.asarray(lysisTraj);
         lysisVelocityArray = np.asarray(lysisVelocityArray);
+        stopTimeArray = np.asarray(stopTimeArray);
+        lysisDirCorrelationArray = np.asarray(lysisDirCorrelationArray);
+        
         nonLysisVelocityArray = np.asarray(nonLysisVelocityArray);
         nonLysisVelocityArray = np.asarray(nonLysisVelocityArray);
 
-        return lysisTraj, lysisVelocityArray, nonLysisTraj, nonLysisVelocityArray 
+        return lysisTraj, lysisVelocityArray, stopTimeArray, lysisDirCorrelationArray, nonLysisTraj, nonLysisVelocityArray 
 
     
     def findLysisEvent(self, A, BIGLIST_traj):
@@ -172,7 +179,18 @@ class analyseTrajectories:
         
         return runningVelocityAverage, runningVelocityAverage_error
 
-    
+    def plotLysisTrajectory(self, A, lysisVelocityArray, stopTimeArray):
+        indexToPlot = 0;
+        time = self.timePerFrame*self.NumFramesToAverageOver*np.arange(len(lysisVelocityArray[indexToPlot]));
+        
+        #Create vertical line to mark where the bacterium has stopped swimming.
+        yAxisLine = np.arange(len(np.max(lysisVelocityArray[indexToPlot])));
+        xAxisLine = np.array([stopTimeArray[indexToPlot] for i in range(0, len(yAxisLine))]);
+
+        A.plotDataSetsWithErrorBars(time, lysisVelocityArray[indexToPlot], 'Velocity', x1=xAxisLine, y1=yAxisLine, label1='stopTime', title='Lysis Event', xlbl='(time seconds)', ylbl='Velocity (micrometers/second)');
+        
+        return
+
     def plotTrajWithSpecificID(self, A, BIGLIST, ID, plotRodLength=0):
         
         # Ensure BIGLIST[ID] exists.
@@ -556,8 +574,9 @@ class analyseTrajectories:
         
         if(title != None): plt.suptitle(title);
         if(xlbl != None): plt.xlabel(xlbl);
-        if(ylbl != None): plt.ylabel(ylbl)
-        plt.legend(loc='upper right');
+        if(ylbl != None): plt.ylabel(ylbl);
+        if(y0_error.size != 0 and y1_error.size != 0 and y2_error.size != 0 and y3_error.size != 0 and y4_error.size != 0): plt.legend(loc='upper right');
+        
         #plt.rc('font', family='serif', size=15);
         #plt.savefig(outputPlotName)
         #plt.show()
@@ -583,11 +602,12 @@ diffusionThreshold = (1/(float(NumFramesToAverageOver)*timePerFrame))*np.sqrt(4*
 #B = analyseLysisEvents(A)
 
 
-#filename = 'testcaseTracks.dat';
-#filename = 'OutputPos00_Movie0000-BrightnessContrast/TrackRodsOutput/tracks.dat';
-#filename = '../Data/171201-DDM/Output-Pos01_Movie0000/trackRods2DtOutput/tracks.dat';
-filename = '../../../../../../../Volumes/CBOGGONUSB/Data/20180206-SurfaceVid/trackRods2DtOutput/tracks.dat';
+#### Declare Filename #######
 
+### MAC ######
+#filename = '../../../../../../../Volumes/CBOGGONUSB/Data/20180206-SurfaceVid/trackRods2DtOutput/tracks.dat';
+
+filename = '../../../../../../../Volumes/MyBook/MastersProject/Data/20180213/20180213Surface2Samples-50fpsx20Mag/DDMmovies180213-151805-AsImageSequences/Output-Pos02_Movie0001/filterTracks2DtOutput/tracks_fixed.dat';
 
 #Read in tracking data
 BIGLIST, numberOfFrames = readTrackingFile(filename)
@@ -632,22 +652,31 @@ A = analyseTrajectories(minTrajLen, NumFramesToAverageOver, timePerFrame, pixels
 
 
 # Find lysis trajectories
-lysisTraj, lysisVelocityArray, nonLysisTraj, nonLysisVelocityArray = A.getLysisTrajectories(A, BIGLIST);
+lysisTraj, lysisVelocityArray, stopTimeArray, lysisDirCorrelationArray, nonLysisTraj, nonLysisVelocityArray = A.getLysisTrajectories(A, BIGLIST);
 
 # Calculate average velocity of non-lysis trajectories
 averageVelocityArray, averageVelocityArray_error = A.calcAverageVelocity(A, nonLysisVelocityArray);
-
 
 #Convert average velocity to micrometers per second and plot velocity distribution:
 averageVelocityArray_micrometers = averageVelocityArray*pixelsToMicrons;
 A.plotHistogram(averageVelocityArray_micrometers, xlbl='Average Velocity (micrometers)');
 
+
+#Convert velocity to micrometers per second and plot lysis trajectory:
+lysisVelocityArray = pixelsToMicrons*lysisVelocityArray;
+stopTimeArray = timePerFrame*stopTimeArray;
+
+#Plot lysis trajectory
+A.plotLysisTrajectory(A, lysisVelocityArray, stopTimeArray);
+
+
+
 ## Plot displacements throughout trajectories
 #A.plotRandomTrajectories(A, lysisVelocityArray, 'time (seconds)', 'Velocity (pixels)');
 
 
-ID = 14;
-A.plotTrajWithSpecificID(A, BIGLIST, ID);
+#ID = 14;
+#A.plotTrajWithSpecificID(A, BIGLIST, ID);
 #A.plotTrajWithSpecificID(A, BIGLIST, ID, plotRodLength=1);
 
 plt.show()
@@ -660,4 +689,4 @@ Notes on things not done:
 
     lysis event definition includes minimum number of frames over which v > diffusionThreshold. But no contingency that number of detected swimming events in trajectory are all one after another. So a swimming type that moves very close to diffusion limit could come up as lysis event.
     
-'''
+''
