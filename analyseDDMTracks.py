@@ -519,32 +519,32 @@ class analyseTrajectories:
         weights = np.ones_like(data00)/float(len(data00));
         plt.hist(data00[:], weights=weights, label=label00, bins=binNum, alpha=alphaVal);
         
-        if (data01.all() == None):
+        if (data01.all() != None):
             data01 = data01/len(data01);
             weights = np.ones_like(data01)/float(len(data01));
 	    plt.hist(data01[:], weights=weights, label=label01, bins=binNum, alpha=alphaVal);
 	
-        if (data02.all() == None):
+        if (data02.all() != None):
             data02 = data02/len(data02);
             weights = np.ones_like(data02)/float(len(data02));
 	    plt.hist(data02[:], weights=weights, label=label02, bins=binNum, alpha=alphaVal);
         
-        if (data03.all() == None):
+        if (data03.all() != None):
             data03 = data03/len(data03);
             weights = np.ones_like(data03)/float(len(data03));
 	    plt.hist(data03[:], weights=weights, label=label03, bins=binNum, alpha=alphaVal);
         
-        if (data04.all() == None):
+        if (data04.all() != None):
             data04 = data04/len(data04);
             weights = np.ones_like(data04)/float(len(data04));
 	    plt.hist(data04[:], weights=weights, label=label04, bins=binNum, alpha=alphaVal);
         
-        if (data05.all() == None):
+        if (data05.all() != None):
             data05 = data05/len(data05);
             weights = np.ones_like(data05)/float(len(data05));
 	    plt.hist(data05[:], weights=weights, label=label05, bins=binNum, alpha=alphaVal);
         
-        if (data06.all() == None):
+        if (data06.all() != None):
             data06 = data06/len(data06);
             weights = np.ones_like(data01)/float(len(data06));
 	    plt.hist(data06[:], weights=weights, label=label06, bins=binNum, alpha=alphaVal);

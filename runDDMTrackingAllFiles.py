@@ -31,15 +31,19 @@ minSwimmingExponent = 1.7;
 minTauVals = 2;
 
 lengthOfVideo = timePerFrame*NumFramesInVideo;  #Total length of video in seconds
-maxVids = 13;   #Define max number of videos to analyse if the last videos have very little to analyse in them.
+maxVids = 2;   #Define max number of videos to analyse if the last videos have very little to analyse in them.
 
 
 # Choose whether to use manually added times or calculated times in script.
 manualTimes = 1;
 t0 = '13:53:28';
-time0 = np.array([0., 41., 491, 607, 733, 859, 985, 1111, 1237, 1363, 1489, 1615, 1741, 1867, 1993, 2119]);
-time1 = np.array([238., 279., 523, 649, 775, 901, 1027, 1153, 1279, 1405, 1531, 1657, 1783, 1909, 2035, 2161]);
-time2 = np.array([392., 433., 565, 691, 817, 943, 1069, 1195, 1321, 1447, 1573, 1699, 1825, 1951, 2077, 2203]);
+#time0 = np.array([0., 41., 491, 607, 733, 859, 985, 1111, 1237, 1363, 1489, 1615, 1741, 1867, 1993, 2119]);
+#time1 = np.array([238., 279., 523, 649, 775, 901, 1027, 1153, 1279, 1405, 1531, 1657, 1783, 1909, 2035, 2161]);
+#time2 = np.array([392., 433., 565, 691, 817, 943, 1069, 1195, 1321, 1447, 1573, 1699, 1825, 1951, 2077, 2203]);
+
+time0 = np.array([0., 41.]);
+time1 = np.array([238., 279.]);
+time2 = np.array([392., 433.]);
 
 # Choose whether to plot average velocity from schulz fit to data or from mean of data:
 plotCurveFittedData = 0;
@@ -54,14 +58,14 @@ plotCurveFittedData = 0;
 ## UBUNTU ###
 #fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-135326-AsImageSequences/';
 #fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-140137-AsImageSequences/';
-fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-140137-AsImageSequences/';
+fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/';
 
 trackingFile = '/filterTracks2DtOutput/tracks_fixed.dat';
 
 
 
 ##### Create output file directory where tracking plots will be saved #####
-outputSaveFileDir = fileDir+'/trackingOutput/';
+outputSaveFileDir = fileDir+'trackingOutput/';
 
 try:
     os.stat(outputSaveFileDir)
@@ -102,22 +106,35 @@ timeCounterPos02 = 9*60;
 measurementList = sorted(os.listdir(fileDir));
 for measurement in measurementList:
     # Skip folders that do not contain image sequences
-    if (measurement[len(measurement)-15:len(measurement)] == 'AsImageSequence'):
+    if (measurement[len(measurement)-16:len(measurement)] != 'AsImageSequences'):
         continue;
     
     else:
         fileList = sorted(os.listdir(fileDir+measurement));
         
-        for file in fileList:
+        for folder in fileList:
             #Ensure only the tracking files are read
             if (folder[0:6] != 'Output'):
                 continue;
             
             else:
-                print '\n######## Calculating average v for folder: '+str(folder)+' #########\n'
+
+		if (folder[7:12] == 'Pos00' and file00Counter >= maxVids):
+                    #Skip video if already calculated up to maxVids for pos00.
+		    continue;
+		
+		if (folder[7:12] == 'Pos01' and file01Counter >= maxVids):
+                    #Skip video if already calculated up to maxVids for pos01.
+		    continue;
+		
+		if (folder[7:12] == 'Pos02' and file02Counter >= maxVids):
+                    #Skip video if already calculated up to maxVids for pos02.
+		    continue;
+
+                print '\n######## Calculating average v for folder: '+measurement+'/'+folder+' #########\n'
 
                 #Read in tracking data
-                BIGLIST, numberOfFrames = readTrackingFile(fileDir+folder+trackingFile);
+                BIGLIST, numberOfFrames = readTrackingFile(fileDir+measurement+'/'+folder+trackingFile);
                 
                 #### Calculate velocity of particles
                 AvVelocityArray, velocityArray, displacementArray, k_exponentArray = A.calcAverageVelocitiesForAllTraj(A, BIGLIST);
@@ -131,35 +148,35 @@ for measurement in measurementList:
                 
 
                 if (folder[7:12] == 'Pos00'):
-                    #Skip video if already calculated up to maxVids for pos00.
-                    if (file00Counter >= maxVids):
-                        continue; 
                     
                     if (plotCurveFittedData == 1):
+			## Fit Schulz distribution to data:
+			fit_params, sigma = A.plotHistogramWithCurveFit(A, AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers)', fit='schulz');
+			v_bar = fit_params[2];
                         velocityPos00.append(v_bar);
                         velocityErrorPos00.append(sigma/2);     # sigma/2 as plt.errorbar plots magitude of y_error on each side of data point.
                     
                     else:
                         velocityPos00.append(np.mean(AvVelocityArray_micrometers));
                         velocityErrorPos00.append(np.std(AvVelocityArray_micrometers)/2);
-
+			
                     fullTraj_velocityPos00.append(AvVelocityArray_micrometers);
                     timePos00.append(timeCounterPos00);
                     file00Counter = file00Counter + 1;
                     timeCounterPos00 = timeCounterPos00+lengthOfVideo;
                 
                 elif (folder[7:12] == 'Pos01'):
-                    #Skip video if already calculated up to maxVids for pos01.
-                    if (file01Counter >= maxVids):
-                        continue;
 
                     if (plotCurveFittedData == 1):
-                        velocityPos00.append(v_bar);
-                        velocityErrorPos00.append(sigma/2);     # sigma/2 as plt.errorbar plots magitude of y_error on each side of data point.
+			## Fit Schulz distribution to data:
+			fit_params, sigma = A.plotHistogramWithCurveFit(A, AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers)', fit='schulz');
+			v_bar = fit_params[2];
+                        velocityPos01.append(v_bar);
+                        velocityErrorPos01.append(sigma/2);     # sigma/2 as plt.errorbar plots magitude of y_error on each side of data point.
                     
                     else:
-                        velocityPos00.append(np.mean(AvVelocityArray_micrometers));
-                        velocityErrorPos00.append(np.std(AvVelocityArray_micrometers)/2);
+                        velocityPos01.append(np.mean(AvVelocityArray_micrometers));
+                        velocityErrorPos01.append(np.std(AvVelocityArray_micrometers)/2);
                     
                     fullTraj_velocityPos01.append(AvVelocityArray_micrometers);
                     timePos01.append(timeCounterPos01);
@@ -167,19 +184,19 @@ for measurement in measurementList:
                     timeCounterPos01 = timeCounterPos01+lengthOfVideo;
                 
                 elif (folder[7:12] == 'Pos02'):
-                    #Skip video if already calculated up to maxVids for pos02.
-                    if (file02Counter >= maxVids):
-                        continue; 
                     
                     if (plotCurveFittedData == 1):
-                        velocityPos00.append(v_bar);
-                        velocityErrorPos00.append(sigma/2);     # sigma/2 as plt.errorbar plots magitude of y_error on each side of data point.
+			## Fit Schulz distribution to data:
+			fit_params, sigma = A.plotHistogramWithCurveFit(A, AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers)', fit='schulz');
+			v_bar = fit_params[2];
+                        velocityPos02.append(v_bar);
+                        velocityErrorPos02.append(sigma/2);     # sigma/2 as plt.errorbar plots magitude of y_error on each side of data point.
                     
                     else:
-                        velocityPos00.append(np.mean(AvVelocityArray_micrometers));
-                        velocityErrorPos00.append(np.std(AvVelocityArray_micrometers)/2);
+                        velocityPos02.append(np.mean(AvVelocityArray_micrometers));
+                        velocityErrorPos02.append(np.std(AvVelocityArray_micrometers)/2);
                     
-                    fullTraj_velocityPos02.append(AvVelocityArray_micrometers);
+		    fullTraj_velocityPos02.append(AvVelocityArray_micrometers);
                     timePos02.append(timeCounterPos02);
                     file02Counter = file02Counter + 1;
                     timeCounterPos02 = timeCounterPos02+lengthOfVideo;
@@ -216,11 +233,14 @@ if (manualTimes == 1):
     timePos02 = time2;
 
 #Plot overlapping, normalised histograms for each position at different times to see if there is a difference in shape.
-timesToPlotHist = [0, 4, 8, 12, 16];
+#timesToPlotHist = [0, 4, 8, 12, 16];
+timesToPlotHist = [0, 1, 0, 1, 0];
 
-A.plotNormalisedHistograms(fullTraj_velocityPos00[timesToPlotHist[0]], timePos00[timesToPlotHist[0]]+'s', fullTraj_velocityPos00[timesToPlotHist[1]], timePos00[timesToPlotHist[1]]+'s', fullTraj_velocityPos00[timesToPlotHist[2]], timePos00[timesToPlotHist[2]]+'s', fullTraj_velocityPos00[timesToPlotHist[3]], timePos00[timesToPlotHist[3]]+'s', fullTraj_velocityPos00[timesToPlotHist[4]], timePos00[timesToPlotHist[4]]+'s', xlbl='Average Velocity (micrometers)', saveFilename=outputSaveFileDir+'Pos00Histograms');
-A.plotNormalisedHistograms(fullTraj_velocityPos01[timesToPlotHist[0]], timePos01[timesToPlotHist[0]]+'s', fullTraj_velocityPos01[timesToPlotHist[1]], timePos01[timesToPlotHist[1]]+'s', fullTraj_velocityPos01[timesToPlotHist[2]], timePos01[timesToPlotHist[2]]+'s', fullTraj_velocityPos01[timesToPlotHist[3]], timePos01[timesToPlotHist[3]]+'s', fullTraj_velocityPos01[timesToPlotHist[4]], timePos01[timesToPlotHist[4]]+'s', xlbl='Average Velocity (micrometers)', saveFilename=outputSaveFileDir+'Pos01Histograms');
-A.plotNormalisedHistograms(fullTraj_velocityPos02[timesToPlotHist[0]], timePos02[timesToPlotHist[0]]+'s', fullTraj_velocityPos02[timesToPlotHist[1]], timePos02[timesToPlotHist[1]]+'s', fullTraj_velocityPos02[timesToPlotHist[2]], timePos02[timesToPlotHist[2]]+'s', fullTraj_velocityPos02[timesToPlotHist[3]], timePos02[timesToPlotHist[3]]+'s', fullTraj_velocityPos02[timesToPlotHist[4]], timePos02[timesToPlotHist[4]]+'s', xlbl='Average Velocity (micrometers)', saveFilename=outputSaveFileDir+'Pos02Histograms');
+A.plotNormalisedHistograms(fullTraj_velocityPos00[timesToPlotHist[0]], str(timePos00[timesToPlotHist[0]])+' s', fullTraj_velocityPos00[timesToPlotHist[1]], str(timePos00[timesToPlotHist[1]])+' s', fullTraj_velocityPos00[timesToPlotHist[2]], str(timePos00[timesToPlotHist[2]])+' s', fullTraj_velocityPos00[timesToPlotHist[3]], str(timePos00[timesToPlotHist[3]])+' s', fullTraj_velocityPos00[timesToPlotHist[4]], str(timePos00[timesToPlotHist[4]])+' s', xlbl='Average Velocity (micrometers)', saveFilename=outputSaveFileDir+'Pos00Histograms');
+
+A.plotNormalisedHistograms(fullTraj_velocityPos01[timesToPlotHist[0]], str(timePos01[timesToPlotHist[0]])+' s', fullTraj_velocityPos01[timesToPlotHist[1]], str(timePos01[timesToPlotHist[1]])+' s', fullTraj_velocityPos01[timesToPlotHist[2]], str(timePos01[timesToPlotHist[2]])+' s', fullTraj_velocityPos01[timesToPlotHist[3]], str(timePos01[timesToPlotHist[3]])+' s', fullTraj_velocityPos01[timesToPlotHist[4]], str(timePos01[timesToPlotHist[4]])+' s', xlbl='Average Velocity (micrometers)', saveFilename=outputSaveFileDir+'Pos01Histograms');
+
+A.plotNormalisedHistograms(fullTraj_velocityPos02[timesToPlotHist[0]], str(timePos02[timesToPlotHist[0]])+' s', fullTraj_velocityPos02[timesToPlotHist[1]], str(timePos02[timesToPlotHist[1]])+' s', fullTraj_velocityPos02[timesToPlotHist[2]], str(timePos02[timesToPlotHist[2]])+' s', fullTraj_velocityPos02[timesToPlotHist[3]], str(timePos02[timesToPlotHist[3]])+' s', fullTraj_velocityPos02[timesToPlotHist[4]], str(timePos02[timesToPlotHist[4]])+' s', xlbl='Average Velocity (micrometers)', saveFilename=outputSaveFileDir+'Pos02Histograms');
 
 
 #Plot average velocity vs time with all positions (control and both pahge videos) on one plot.
