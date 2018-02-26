@@ -171,6 +171,18 @@ class analyseTrajectories:
         
         return runningVelocityAverage, runningVelocityAverage_error
 
+    def plotLysisTrajectory(self, A, lysisVelocityArray, stopTimeArray):
+        indexToPlot = 0;
+        time = self.timePerFrame*self.NumFramesToAverageOver*np.arange(len(lysisVelocityArray[indexToPlot]));
+
+        #Create vertical line to mark where the bacterium has stopped swimming.
+        yAxisLine = np.arange(len(np.max(lysisVelocityArray[indexToPlot])));
+        xAxisLine = np.array([stopTimeArray[indexToPlot] for i in range(0, len(yAxisLine))]);
+
+        A.plotDataSetsWithErrorBars(time, lysisVelocityArray[indexToPlot], 'Velocity', x1=xAxisLine, y1=yAxisLine, label1='stopTime', title='Lysis Event', xlbl='(time seconds)', ylbl='Velocity (micrometers/second)');
+
+        return
+
     
     def plotTrajWithSpecificID(self, A, BIGLIST, ID, plotRodLength=0):
         
@@ -640,6 +652,13 @@ averageVelocityArray, averageVelocityArray_error = A.calcAverageVelocity(A, nonL
 #Convert average velocity to micrometers per second and plot velocity distribution:
 averageVelocityArray_micrometers = averageVelocityArray*pixelsToMicrons;
 A.plotHistogram(averageVelocityArray_micrometers, xlbl='Average Velocity (micrometers)');
+
+#Convert velocity to micrometers per second and plot lysis trajectory:
+lysisVelocityArray = pixelsToMicrons*lysisVelocityArray;
+stopTimeArray = timePerFrame*stopTimeArray;
+
+#Plot lysis trajectory
+A.plotLysisTrajectory(A, lysisVelocityArray, stopTimeArray);    #Currently only plots the first detected lysis trajectory
 
 ## Plot displacements throughout trajectories
 #A.plotRandomTrajectories(A, lysisVelocityArray, 'time (seconds)', 'Velocity (pixels)');
