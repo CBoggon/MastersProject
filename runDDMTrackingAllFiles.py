@@ -90,6 +90,10 @@ fullTraj_velocityPos00 = [];  #np.zeros(len(os.listdir(fileDir)));
 fullTraj_velocityPos01 = [];
 fullTraj_velocityPos02 = [];
 
+NArrayPos00 = [];   #Number of bacteria
+NArrayPos01 = [];
+NArrayPos02 = [];
+
 timePos00 = [];
 timePos01 = [];
 timePos02 = [];
@@ -161,6 +165,7 @@ for measurement in measurementList:
                         velocityErrorPos00.append(np.std(AvVelocityArray_micrometers)/2);
 			
                     fullTraj_velocityPos00.append(AvVelocityArray_micrometers);
+		    NArrayPos00.append(len(velocityArray));
                     timePos00.append(timeCounterPos00);
                     file00Counter = file00Counter + 1;
                     timeCounterPos00 = timeCounterPos00+lengthOfVideo;
@@ -179,6 +184,7 @@ for measurement in measurementList:
                         velocityErrorPos01.append(np.std(AvVelocityArray_micrometers)/2);
                     
                     fullTraj_velocityPos01.append(AvVelocityArray_micrometers);
+		    NArrayPos01.append(len(velocityArray));
                     timePos01.append(timeCounterPos01);
                     file01Counter = file01Counter + 1;
                     timeCounterPos01 = timeCounterPos01+lengthOfVideo;
@@ -197,6 +203,7 @@ for measurement in measurementList:
                         velocityErrorPos02.append(np.std(AvVelocityArray_micrometers)/2);
                     
 		    fullTraj_velocityPos02.append(AvVelocityArray_micrometers);
+		    NArrayPos02.append(len(velocityArray));
                     timePos02.append(timeCounterPos02);
                     file02Counter = file02Counter + 1;
                     timeCounterPos02 = timeCounterPos02+lengthOfVideo;
@@ -214,16 +221,19 @@ for measurement in measurementList:
 velocityPos00 = np.asarray(velocityPos00);
 velocityErrorPos00 = np.asarray(velocityErrorPos00);
 fullTraj_velocityPos00 = np.asarray(fullTraj_velocityPos00);
+NArrayPos00 = np.asarray(NArrayPos00);
 timePos00 = np.asarray(timePos00);
 
 velocityPos01 = np.asarray(velocityPos01);
 velocityErrorPos01 = np.asarray(velocityErrorPos01);
 fullTraj_velocityPos01 = np.asarray(fullTraj_velocityPos01);
+NArrayPos01 = np.asarray(NArrayPos01);
 timePos01 = np.asarray(timePos01);
 
 velocityPos02 = np.asarray(velocityPos02);
 velocityErrorPos02 = np.asarray(velocityErrorPos02);
 fullTraj_velocityPos02 = np.asarray(fullTraj_velocityPos02);
+NArrayPos02 = np.asarray(NArrayPos02);
 timePos02 = np.asarray(timePos02);
 
 
@@ -242,6 +252,10 @@ A.plotNormalisedHistograms(fullTraj_velocityPos01[timesToPlotHist[0]], str(timeP
 
 A.plotNormalisedHistograms(fullTraj_velocityPos02[timesToPlotHist[0]], str(timePos02[timesToPlotHist[0]])+' s', fullTraj_velocityPos02[timesToPlotHist[1]], str(timePos02[timesToPlotHist[1]])+' s', fullTraj_velocityPos02[timesToPlotHist[2]], str(timePos02[timesToPlotHist[2]])+' s', fullTraj_velocityPos02[timesToPlotHist[3]], str(timePos02[timesToPlotHist[3]])+' s', fullTraj_velocityPos02[timesToPlotHist[4]], str(timePos02[timesToPlotHist[4]])+' s', xlbl='Average Velocity (micrometers)', saveFilename=outputSaveFileDir+'Pos02Histograms');
 
+#Plot motile number of motile bacteria vs time
+A.plotDataSetsWithErrorBars(timePos00, NArrayPos00, 'N Pos00', x1=timePos01, y1=NArrayPos01, label1='N Pos01', x2=timePos02, y2=NArrayPos02, label2='N Pos02', title='Tracked Number of Motile Bacteria', xlbl='Time (Seconds)', ylbl='Number of Tracked Bacteria');
+outputFile = outputSaveFileDir+'NVsTime';
+plt.savefig(outputFile);
 
 #Plot average velocity vs time with all positions (control and both pahge videos) on one plot.
 A.plotDataSetsWithErrorBars(timePos00, velocityPos00, 'average Velocity Pos00', y0_error=velocityErrorPos00, x1=timePos01, y1=velocityPos01, y1_error=velocityErrorPos01, label1='average velocity Pos01', x2=timePos02, y2=velocityPos02, y2_error=velocityErrorPos02, label2='average velocity Pos02', title='Tracked Average Velocities', xlbl='Time (Seconds)', ylbl='Average Velocity (micrometers/second)');
