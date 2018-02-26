@@ -42,8 +42,15 @@ fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/201702
 ## UBUNTU ###
 
 
+#### Define input file to read
 trackingFile = '/filterTracks2DtOutput/tracks_fixed.dat';
 
+##### Create output file directory where tracking plots will be saved #####
+outputSaveFileDir = fileDir+'/trackingOutput/';
+try:
+    os.stat(outputSaveFileDir)
+except:
+    os.mkdir(outputSaveFileDir);
 
 ### Initialise Array
 A = analyseTrajectories(minTrajLen, NumFramesToAverageOver, timePerFrame, pixelsToMicrons,  minStopTimeThreshold, minStopVelocityThreshold, initialFrameNum, stoppingVelocityThreshold, diffusionThreshold, minSwimmingExponent, minTauVals);
@@ -82,16 +89,24 @@ for folder in fileList:
         #Read in tracking data
         BIGLIST, numberOfFrames = readTrackingFile(fileDir+folder+trackingFile);
         
-        #### Calculate velocity of particles
-        AvVelocityArray, velocityArray, displacementArray, k_exponentArray = A.calcAverageVelocitiesForAllTraj(A, BIGLIST);
-        
-        # Calculate average velocity in micrometers/second
-        AvVelocityArray_micrometers = pixelsToMicrons*AvVelocityArray;
-        
-        # Fit Schulz distribution to data:
-        fit_params, sigma = A.plotHistogramWithCurveFit(A, AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers)', fit='schulz');
-	v_bar = fit_params[2];
-        
+        # Find lysis trajectories
+        lysisTraj, lysisVelocityArray, stopTimeArray, lysisDirCorrelationArray, nonLysisTraj, nonLysisVelocityArray = A.getLysisTrajectories(A, BIGLIST);
+
+        # Calculate average velocity of non-lysis trajectories
+        averageVelocityArray, averageVelocityArray_error = A.calcAverageVelocity(A, nonLysisVelocityArray);
+
+        #Convert average velocity to micrometers per second and plot velocity distribution:
+        averageVelocityArray_micrometers = averageVelocityArray*pixelsToMicrons;
+        A.plotHistogram(averageVelocityArray_micrometers, xlbl='Average Velocity (micrometers)');
+
+        #Convert velocity to micrometers per second and plot lysis trajectory:
+        lysisVelocityArray = pixelsToMicrons*lysisVelocityArray;
+        stopTimeArray = timePerFrame*stopTimeArray;
+
+        #Plot lysis trajectory
+        VA.plotLysisTrajectory(A, lysisVelocityArray, stopTimeArray);
+
+
         if (folder[7:12] != 'Pos00'):
             velocityPos00.append(v_bar);
             velocityErrorPos00.append(sigma);

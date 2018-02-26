@@ -321,7 +321,7 @@ class analyseTrajectories:
         velocityArray = displacementArray/(self.NumFramesToAverageOver*self.timePerFrame);
         AvVelocity = np.mean(velocityArray);
         #AvVelocity = AvDisplacement/(self.NumFramesToAverageOver*self.timePerFrame);
-        AvVelocity_error = np.std(velocityArray)/np.sqrt(len(velocityArray));   #Standard error on mean 
+        AvVelocity_error = np.std(velocityArray)/np.sqrt(len(velocityArray));   #Standard deviation (NB: Not standard error on mean)
 
         #Calculate average mean squared displacement as a function of tau
         meanSquaredDispArray, tauArray = A.calcMeanSquaredDisplacement(xPositions, yPositions);
@@ -498,22 +498,77 @@ class analyseTrajectories:
     # Plot distribution of velocities
     def plotHistogram(self, data, xlbl='bins', ylbl='Frequency', xlim=np.array(None)):
         plt.figure()
-	plt.hist(data[:], bins=200)
+	plt.hist(data[:], bins=60)
 	plt.xlabel(xlbl);
 	plt.ylabel(ylbl);
         if (xlim.all() != None):
             plt.xlim(xlim[0], xlim[1]);
 
-        #plt.savefig('outputHistogram.pdf')
+        plt.savefig(outputFile);
 	#plt.show()
         return
 
+    # Plot distribution of velocities
+    def plotNormalisedHistograms(self, data00, label00=np.array(None), data01=np.array(None), label01=np.array(None), data02=np.array(None), label02=np.array(None), data03=np.array(None), label03=np.array(None), data04=np.array(None), label04=np.array(None), data05=np.array(None), label05=np.array(None), data06=np.array(None), label06=np.array(None), xlbl='bins', ylbl='Normalised Frequency', xlim=np.array(None), saveFilename=None):
+        
+        binNum = 60;
+        alphaVal = 0.4;
+
+        plt.figure()
+        data00 = data00/len(data00);
+        weights = np.ones_like(data00)/float(len(data00));
+        plt.hist(data00[:], weights=weights, label=label00, bins=binNum, alpha=alphaVal);
+        
+        if (data01.all() == None):
+            data01 = data01/len(data01);
+            weights = np.ones_like(data01)/float(len(data01));
+	    plt.hist(data01[:], weights=weights, label=label01, bins=binNum, alpha=alphaVal);
+	
+        if (data02.all() == None):
+            data02 = data02/len(data02);
+            weights = np.ones_like(data02)/float(len(data02));
+	    plt.hist(data02[:], weights=weights, label=label02, bins=binNum, alpha=alphaVal);
+        
+        if (data03.all() == None):
+            data03 = data03/len(data03);
+            weights = np.ones_like(data03)/float(len(data03));
+	    plt.hist(data03[:], weights=weights, label=label03, bins=binNum, alpha=alphaVal);
+        
+        if (data04.all() == None):
+            data04 = data04/len(data04);
+            weights = np.ones_like(data04)/float(len(data04));
+	    plt.hist(data04[:], weights=weights, label=label04, bins=binNum, alpha=alphaVal);
+        
+        if (data05.all() == None):
+            data05 = data05/len(data05);
+            weights = np.ones_like(data05)/float(len(data05));
+	    plt.hist(data05[:], weights=weights, label=label05, bins=binNum, alpha=alphaVal);
+        
+        if (data06.all() == None):
+            data06 = data06/len(data06);
+            weights = np.ones_like(data01)/float(len(data06));
+	    plt.hist(data06[:], weights=weights, label=label06, bins=binNum, alpha=alphaVal);
+        
+	plt.xlabel(xlbl);
+	plt.ylabel(ylbl);
+        if (xlim.all() != None):
+            plt.xlim(xlim[0], xlim[1]);
+
+        plt.legend(loc='upper right');
+        
+        if (saveFilename != None):
+            plt.savefig(saveFilename);
+	
+        #plt.show()
+        
+        return
+    
     def plotHistogramWithCurveFit(self, A, data, xlbl='bins', ylbl='Frequency', fit='schulz'):
         popt_RuntimeError = [-10, -10, -10];
 	sigma_RuntimeError = -10;
 
 	plt.figure()
-        bin_heights, bin_borders, _ = plt.hist(data, bins=100, label='histogram')
+        bin_heights, bin_borders, _ = plt.hist(data, bins=60, label='histogram')
         bin_centers = bin_borders[:-1] + np.diff(bin_borders) / 2
         x_interval_for_fit = np.linspace(bin_borders[0], bin_borders[-1], 10000);
         
@@ -538,7 +593,8 @@ class analyseTrajectories:
             	v_bar = popt[2];
             	z = popt[1];
             	variance = np.sqrt(v_bar**2/(z+1));
-            	sigma = np.sqrt(variance)/np.sqrt(len(y_for_plot));     #Standard error on the mean.
+            	#sigma = np.sqrt(variance)/np.sqrt(len(y_for_plot));     #Standard error on the mean.
+            	sigma = np.sqrt(variance);     #Standard deviation (not standard error on mean).
                 print 'Schulz fit with equation: P(v) = (v**z/z!)*((z+1)/v_bar)**(z+1)*np.exp(-(v/v_bar)*(z+1)). Optimised constants: z_factorial = %f, z = %f, v_bar = %f \n' % tuple(popt); 
 		
 	    except RuntimeError:
