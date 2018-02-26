@@ -96,14 +96,14 @@ class analyseTrajectories:
                 
                 # Detected possible lysis event.
                 
-                for i in range(counter, len(runningVelocityAverage)-1):
+                for i in range(counter+2*counterJump, len(runningVelocityAverage)-1):
                     if (runningVelocityAverage[i] >= self.diffusionThreshold and runningVelocityAverage[i+1] >= self.diffusionThreshold):
                         #particle got stuck on glass and started moving again. Not lysis event.
                         noLysisMarker = 1;
                         break;
 
                 if (np.mean(runningVelocityAverage) < self.diffusionThreshold):
-                    #Particle could possibly be stuck to the glass or diffusing throughout whole trajectory.
+                    #Particle could possibly be either stuck to the glass or diffusing throughout whole trajectory.
                     swimmerArray = [];
                     for i in range(0, len(runningVelocityAverage)):
                         if ((runningVelocityAverage[i-1] > self.diffusionThreshold) and (runningVelocityAverage[i] > self.diffusionThreshold) and (runningVelocityAverage[i+1] > self.diffusionThreshold)):
@@ -607,10 +607,17 @@ diffusionThreshold = (1/(float(NumFramesToAverageOver)*timePerFrame))*np.sqrt(4*
 ### MAC ######
 #filename = '../../../../../../../Volumes/CBOGGONUSB/Data/20180206-SurfaceVid/trackRods2DtOutput/tracks.dat';
 
-filename = '../../../../../../../Volumes/MyBook/MastersProject/Data/20180213/20180213Surface2Samples-50fpsx20Mag/DDMmovies180213-151805-AsImageSequences/Output-Pos02_Movie0001/filterTracks2DtOutput/tracks_fixed.dat';
+#filename = '../../../../../../../Volumes/MyBook/MastersProject/Data/20180213/20180213Surface2Samples-50fpsx20Mag/DDMmovies180213-151805-AsImageSequences/Output-Pos02_Movie0001/filterTracks2DtOutput/tracks_fixed.dat';
+
+
+### UBUNTU ######
+#fileDir = '../../../../../../../media/cameron/MyBook/MastersProject/Data/20180213/20180213Surface2Samples-50fpsx20Mag/DDMmovies180213-152022-AsImageSequences/Output-Pos03_Movie0027';
+fileDir = '../../../../../../../media/cameron/MyBook/MastersProject/Data/20180213/20180213Surface2Samples-50fpsx20Mag/DDMmovies180213-154132-AsImageSequences/Output-Pos03_Movie0002';
+
+trackFilename = fileDir+'/filterTracks2DtOutput/tracks_fixed.dat';
 
 #Read in tracking data
-BIGLIST, numberOfFrames = readTrackingFile(filename)
+BIGLIST, numberOfFrames = readTrackingFile(trackFilename)
 initialFrameNum = int(BIGLIST[0][0, 0]);
 A = analyseTrajectories(minTrajLen, NumFramesToAverageOver, timePerFrame, pixelsToMicrons, RunningAvTrajLen,  minStopTimeThreshold, minSwimTimeThreshold, initialFrameNum, stoppingVelocityThreshold, diffusionThreshold);
 
@@ -667,7 +674,7 @@ lysisVelocityArray = pixelsToMicrons*lysisVelocityArray;
 stopTimeArray = timePerFrame*stopTimeArray;
 
 #Plot lysis trajectory
-A.plotLysisTrajectory(A, lysisVelocityArray, stopTimeArray);
+#A.plotLysisTrajectory(A, lysisVelocityArray, stopTimeArray);
 
 
 
@@ -675,8 +682,8 @@ A.plotLysisTrajectory(A, lysisVelocityArray, stopTimeArray);
 #A.plotRandomTrajectories(A, lysisVelocityArray, 'time (seconds)', 'Velocity (pixels)');
 
 
-#ID = 14;
-#A.plotTrajWithSpecificID(A, BIGLIST, ID);
+ID = 14;
+A.plotTrajWithSpecificID(A, BIGLIST, ID);
 #A.plotTrajWithSpecificID(A, BIGLIST, ID, plotRodLength=1);
 
 plt.show()
@@ -689,4 +696,4 @@ Notes on things not done:
 
     lysis event definition includes minimum number of frames over which v > diffusionThreshold. But no contingency that number of detected swimming events in trajectory are all one after another. So a swimming type that moves very close to diffusion limit could come up as lysis event.
     
-''
+'''

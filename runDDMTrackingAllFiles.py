@@ -38,11 +38,12 @@ maxVids = 13;   #Define max number of videos to analyse if the last videos have 
 ## MAC ###
 
 #fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-135326-AsImageSequences/';
-fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-140137-AsImageSequences/';
+#fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-140137-AsImageSequences/';
 
 ## UBUNTU ###
 #fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-135326-AsImageSequences/';
 #fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-140137-AsImageSequences/';
+fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-140137-AsImageSequences/';
 
 trackingFile = '/filterTracks2DtOutput/tracks_fixed.dat';
 
@@ -78,9 +79,9 @@ file00Counter = 0;
 file01Counter = 0;
 file02Counter = 0;
 
-timeCounterPos00 = 0;
-timeCounterPos01 = 0;
-timeCounterPos02 = 0;
+timeCounterPos00 = 7*60;
+timeCounterPos01 = 8*60;
+timeCounterPos02 = 9*60;
 
 fileList = sorted(os.listdir(fileDir));
 for folder in fileList:
