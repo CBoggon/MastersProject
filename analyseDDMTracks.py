@@ -512,7 +512,7 @@ class analyseTrajectories:
     def plotNormalisedHistograms(self, data00, label00=np.array(None), data01=np.array(None), label01=np.array(None), data02=np.array(None), label02=np.array(None), data03=np.array(None), label03=np.array(None), data04=np.array(None), label04=np.array(None), data05=np.array(None), label05=np.array(None), data06=np.array(None), label06=np.array(None), xlbl='bins', ylbl='Normalised Frequency', xlim=np.array(None), saveFilename=None):
         
         binNum = 60;
-        alphaVal = 0.4;
+        alphaVal = 0.3;
 
         plt.figure()
         data00 = data00/len(data00);

@@ -31,7 +31,7 @@ minSwimmingExponent = 1.7;
 minTauVals = 2;
 
 lengthOfVideo = timePerFrame*NumFramesInVideo;  #Total length of video in seconds
-maxVids = 2;   #Define max number of videos to analyse if the last videos have very little to analyse in them.
+maxVids = 15;   #Define max number of videos to analyse if the last videos have very little to analyse in them.
 
 
 # Choose whether to use manually added times or calculated times in script.
@@ -41,9 +41,13 @@ t0 = '13:53:28';
 #time1 = np.array([238., 279., 523, 649, 775, 901, 1027, 1153, 1279, 1405, 1531, 1657, 1783, 1909, 2035, 2161]);
 #time2 = np.array([392., 433., 565, 691, 817, 943, 1069, 1195, 1321, 1447, 1573, 1699, 1825, 1951, 2077, 2203]);
 
-time0 = np.array([0., 41.]);
-time1 = np.array([238., 279.]);
-time2 = np.array([392., 433.]);
+time0 = np.array([0., 41., 491, 607, 733, 859, 985, 1111, 1237, 1363, 1489, 1615, 1741, 1867, 1993]);
+time1 = np.array([238., 279., 523, 649, 775, 901, 1027, 1153, 1279, 1405, 1531, 1657, 1783, 1909, 2035]);
+time2 = np.array([392., 433., 565, 691, 817, 943, 1069, 1195, 1321, 1447, 1573, 1699, 1825, 1951, 2077]);
+
+#time0 = np.array([0., 41.]);
+#time1 = np.array([238., 279.]);
+#time2 = np.array([392., 433.]);
 
 # Choose whether to plot average velocity from schulz fit to data or from mean of data:
 plotCurveFittedData = 0;
@@ -54,18 +58,20 @@ plotCurveFittedData = 0;
 
 #fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-135326-AsImageSequences/';
 #fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-140137-AsImageSequences/';
+fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/';
 
 ## UBUNTU ###
 #fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-135326-AsImageSequences/';
 #fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-140137-AsImageSequences/';
-fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/';
+#fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/';
 
 trackingFile = '/filterTracks2DtOutput/tracks_fixed.dat';
 
 
 
 ##### Create output file directory where tracking plots will be saved #####
-outputSaveFileDir = fileDir+'trackingOutput/';
+#outputSaveFileDir = fileDir+'trackingOutput/';
+outputSaveFileDir = '../../Data/Results/DDM/';
 
 try:
     os.stat(outputSaveFileDir)
@@ -243,22 +249,27 @@ if (manualTimes == 1):
     timePos02 = time2;
 
 #Plot overlapping, normalised histograms for each position at different times to see if there is a difference in shape.
-#timesToPlotHist = [0, 4, 8, 12, 16];
-timesToPlotHist = [0, 1, 0, 1, 0];
+timesToPlotHist = [0, 4, 8, 11];
+#timesToPlotHist = [0, 1, 0, 1, 0];
 
-A.plotNormalisedHistograms(fullTraj_velocityPos00[timesToPlotHist[0]], str(timePos00[timesToPlotHist[0]])+' s', fullTraj_velocityPos00[timesToPlotHist[1]], str(timePos00[timesToPlotHist[1]])+' s', fullTraj_velocityPos00[timesToPlotHist[2]], str(timePos00[timesToPlotHist[2]])+' s', fullTraj_velocityPos00[timesToPlotHist[3]], str(timePos00[timesToPlotHist[3]])+' s', fullTraj_velocityPos00[timesToPlotHist[4]], str(timePos00[timesToPlotHist[4]])+' s', xlbl='Average Velocity (micrometers)', saveFilename=outputSaveFileDir+'Pos00Histograms');
+A.plotNormalisedHistograms(fullTraj_velocityPos00[timesToPlotHist[0]], str(timePos00[timesToPlotHist[0]])+' s', fullTraj_velocityPos00[timesToPlotHist[1]], str(timePos00[timesToPlotHist[1]])+' s', fullTraj_velocityPos00[timesToPlotHist[2]], str(timePos00[timesToPlotHist[2]])+' s', fullTraj_velocityPos00[timesToPlotHist[3]], str(timePos00[timesToPlotHist[3]])+' s', xlbl='Normalised Velocity (v/<v>)', saveFilename=outputSaveFileDir+'Pos00Histograms');
 
-A.plotNormalisedHistograms(fullTraj_velocityPos01[timesToPlotHist[0]], str(timePos01[timesToPlotHist[0]])+' s', fullTraj_velocityPos01[timesToPlotHist[1]], str(timePos01[timesToPlotHist[1]])+' s', fullTraj_velocityPos01[timesToPlotHist[2]], str(timePos01[timesToPlotHist[2]])+' s', fullTraj_velocityPos01[timesToPlotHist[3]], str(timePos01[timesToPlotHist[3]])+' s', fullTraj_velocityPos01[timesToPlotHist[4]], str(timePos01[timesToPlotHist[4]])+' s', xlbl='Average Velocity (micrometers)', saveFilename=outputSaveFileDir+'Pos01Histograms');
+A.plotNormalisedHistograms(fullTraj_velocityPos01[timesToPlotHist[0]], str(timePos01[timesToPlotHist[0]])+' s', fullTraj_velocityPos01[timesToPlotHist[1]], str(timePos01[timesToPlotHist[1]])+' s', fullTraj_velocityPos01[timesToPlotHist[2]], str(timePos01[timesToPlotHist[2]])+' s', fullTraj_velocityPos01[timesToPlotHist[3]], str(timePos01[timesToPlotHist[3]])+' s', xlbl='Normalised Velocity (v/<v>)', saveFilename=outputSaveFileDir+'Pos01Histograms');
 
-A.plotNormalisedHistograms(fullTraj_velocityPos02[timesToPlotHist[0]], str(timePos02[timesToPlotHist[0]])+' s', fullTraj_velocityPos02[timesToPlotHist[1]], str(timePos02[timesToPlotHist[1]])+' s', fullTraj_velocityPos02[timesToPlotHist[2]], str(timePos02[timesToPlotHist[2]])+' s', fullTraj_velocityPos02[timesToPlotHist[3]], str(timePos02[timesToPlotHist[3]])+' s', fullTraj_velocityPos02[timesToPlotHist[4]], str(timePos02[timesToPlotHist[4]])+' s', xlbl='Average Velocity (micrometers)', saveFilename=outputSaveFileDir+'Pos02Histograms');
+A.plotNormalisedHistograms(fullTraj_velocityPos02[timesToPlotHist[0]], str(timePos02[timesToPlotHist[0]])+' s', fullTraj_velocityPos02[timesToPlotHist[1]], str(timePos02[timesToPlotHist[1]])+' s', fullTraj_velocityPos02[timesToPlotHist[2]], str(timePos02[timesToPlotHist[2]])+' s', fullTraj_velocityPos02[timesToPlotHist[3]], str(timePos02[timesToPlotHist[3]])+' s', xlbl='Normalised Velocity (v/<v>)', saveFilename=outputSaveFileDir+'Pos02Histograms');
+
+#Convert time to minutes
+timePos00 = timePos00/60;
+timePos01 = timePos01/60;
+timePos02 = timePos02/60;
 
 #Plot motile number of motile bacteria vs time
-A.plotDataSetsWithErrorBars(timePos00, NArrayPos00, 'N Pos00', x1=timePos01, y1=NArrayPos01, label1='N Pos01', x2=timePos02, y2=NArrayPos02, label2='N Pos02', title='Tracked Number of Motile Bacteria', xlbl='Time (Seconds)', ylbl='Number of Tracked Bacteria');
+A.plotDataSetsWithErrorBars(timePos00, NArrayPos00, 'N Pos00', x1=timePos01, y1=NArrayPos01, label1='N Pos01', x2=timePos02, y2=NArrayPos02, label2='N Pos02', title='Tracked Number of Motile Bacteria', xlbl='Time (Minutes)', ylbl='Number of Tracked Bacteria');
 outputFile = outputSaveFileDir+'NVsTime';
 plt.savefig(outputFile);
 
 #Plot average velocity vs time with all positions (control and both pahge videos) on one plot.
-A.plotDataSetsWithErrorBars(timePos00, velocityPos00, 'average Velocity Pos00', y0_error=velocityErrorPos00, x1=timePos01, y1=velocityPos01, y1_error=velocityErrorPos01, label1='average velocity Pos01', x2=timePos02, y2=velocityPos02, y2_error=velocityErrorPos02, label2='average velocity Pos02', title='Tracked Average Velocities', xlbl='Time (Seconds)', ylbl='Average Velocity (micrometers/second)');
+A.plotDataSetsWithErrorBars(timePos00, velocityPos00, 'average Velocity Pos00', y0_error=velocityErrorPos00, x1=timePos01, y1=velocityPos01, y1_error=velocityErrorPos01, label1='average velocity Pos01', x2=timePos02, y2=velocityPos02, y2_error=velocityErrorPos02, label2='average velocity Pos02', title='Tracked Average Velocities', xlbl='Time (Minutes)', ylbl='Average Velocity (micrometers/second)');
 
 outputFile = outputSaveFileDir+'AvVelocityVsTime';
 plt.savefig(outputFile);
