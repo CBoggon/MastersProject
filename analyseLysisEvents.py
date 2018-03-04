@@ -95,7 +95,8 @@ class analyseTrajectories:
             if ((runningVelocityAverage[counter + counterJump] < self.stoppingVelocityThreshold*runningVelocityAverage[counter]) and (runningVelocityAverage[counter + 2*counterJump] <= self.stoppingVelocityThreshold*runningVelocityAverage[counter]) and (np.mean(runningVelocityAverage[counter:len(runningVelocityAverage)]) <= self.diffusionThreshold)):
                 
                 # Detected possible lysis event.
-                
+                print 'Detected possible lysis event for ID = '+str(BIGLIST_traj[0, 12]);
+
                 for i in range(counter+2*counterJump, len(runningVelocityAverage)-1):
                     if (runningVelocityAverage[i] >= self.diffusionThreshold and runningVelocityAverage[i+1] >= self.diffusionThreshold):
                         #particle got stuck on glass and started moving again. Not lysis event.
@@ -105,7 +106,7 @@ class analyseTrajectories:
                 if (np.mean(runningVelocityAverage) < self.diffusionThreshold):
                     #Particle could possibly be either stuck to the glass or diffusing throughout whole trajectory.
                     swimmerArray = [];
-                    for i in range(0, len(runningVelocityAverage)):
+                    for i in range(0, len(runningVelocityAverage)-1):
                         if ((runningVelocityAverage[i-1] > self.diffusionThreshold) and (runningVelocityAverage[i] > self.diffusionThreshold) and (runningVelocityAverage[i+1] > self.diffusionThreshold)):
                             #Found swimmer.
                             swimmerArray.append(i);
@@ -205,9 +206,9 @@ class analyseTrajectories:
         stopTime_frame, velocityArray, runningVelocityAverage, runningVelocityAverage_error, traj_frames, directionCorrelationArray = A.findLysisEvent(A, BIGLIST[ID]);
         
         #Convert data to units of micrometers and seconds.
-        velocityArray = self.pixelsToMicrons*velocityArray;
-        runningVelocityAverage = self.pixelsToMicrons*runningVelocityAverage;
-        runningVelocityAverage_error = self.pixelsToMicrons*(runningVelocityAverage_error/runningVelocityAverage);
+        #velocityArray = self.pixelsToMicrons*velocityArray;
+        #runningVelocityAverage = self.pixelsToMicrons*runningVelocityAverage;
+        #runningVelocityAverage_error = self.pixelsToMicrons*(runningVelocityAverage_error/runningVelocityAverage);
         #traj_frames = self.timePerFrame*traj_frames;
 
         #Define array to go on x axis of graph
@@ -588,16 +589,16 @@ class analyseTrajectories:
 #Declare Variables
 NumFramesToAverageOver = 3;
 minTrajLen = 30*NumFramesToAverageOver;
-RunningAvTrajLen = int(minTrajLen/10);  #Number of points in velocity array to average over in running average.
-minSwimTimeThreshold = 6    # min number of frames over which a particle has v > diffusionThreshold to define as swimming. N_frames = minSwimTimeThreshold*NumFramesToAverageOver*RunningAvTrajLen 
+RunningAvTrajLen = int(minTrajLen/20);  #Number of points in velocity array to average over in running average.
+minSwimTimeThreshold = 3    # min number of frames over which a particle has v > diffusionThreshold to define as swimming. N_frames = minSwimTimeThreshold*NumFramesToAverageOver*RunningAvTrajLen 
 fps = 50;
 timePerFrame = 1./fps;
 pixelsToMicrons = 0.702;    # For x20 Mag
 #pixelsToMicrons = 0.354;    #UNKNOWN FOR X40 MAG
 minStopTimeThreshold = 1*fps;       #minimum length of time a bacteria is expected to stop before lysing. (frames)
 #jumpsToFindLysis = 2*RunningAvTrajLen;  #Jumps in runningVelocityAverage array used to define whether a lysis event is detected.
-stoppingVelocityThreshold = 0.2;
-D = 0.34;    #Diffusion constant micrometers/second
+stoppingVelocityThreshold = 0.5;
+D = 0.5;    #Diffusion constant micrometers/second
 diffusionThreshold = (1/(float(NumFramesToAverageOver)*timePerFrame))*np.sqrt(4*D*(1/pixelsToMicrons)**2*(float(NumFramesToAverageOver)*timePerFrame));     #Above this threshold, bacteria considered to still be swimming.
 #B = analyseLysisEvents(A)
 
@@ -608,11 +609,11 @@ diffusionThreshold = (1/(float(NumFramesToAverageOver)*timePerFrame))*np.sqrt(4*
 #filename = '../../../../../../../Volumes/CBOGGONUSB/Data/20180206-SurfaceVid/trackRods2DtOutput/tracks.dat';
 
 #filename = '../../../../../../../Volumes/MyBook/MastersProject/Data/20180213/20180213Surface2Samples-50fpsx20Mag/DDMmovies180213-151805-AsImageSequences/Output-Pos02_Movie0001/filterTracks2DtOutput/tracks_fixed.dat';
-
+fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid1-25fpsx20Mag2000Frames/DDMmovies180227-143931-AsImageSequences/Output-Pos02_Movie0010';
 
 ### UBUNTU ######
 #fileDir = '../../../../../../../media/cameron/MyBook/MastersProject/Data/20180213/20180213Surface2Samples-50fpsx20Mag/DDMmovies180213-152022-AsImageSequences/Output-Pos03_Movie0027';
-fileDir = '../../../../../../../media/cameron/MyBook/MastersProject/Data/20180213/20180213Surface2Samples-50fpsx20Mag/DDMmovies180213-154132-AsImageSequences/Output-Pos03_Movie0002';
+#fileDir = '../../../../../../../media/cameron/MyBook/MastersProject/Data/20180213/20180213Surface2Samples-50fpsx20Mag/DDMmovies180213-154132-AsImageSequences/Output-Pos03_Movie0002';
 
 trackFilename = fileDir+'/filterTracks2DtOutput/tracks_fixed.dat';
 
@@ -655,23 +656,23 @@ A = analyseTrajectories(minTrajLen, NumFramesToAverageOver, timePerFrame, pixels
 ### Get trajectories, then calculate cumulative velocity of trajectories and apply running average.
 # Define threshold for which if average velocity drops significantly. Save these trajectories and cumulative velocities of them. Velocities should fall to zero, within a certain error.
 # Calculate time between drop and end of trajectory. If velocity recovers again, don't save the trajectory. Save also the ID and the frame so can check them by eye.
-# calculate number of frames/time between stop and end of trajectory and plot stop time.
+# calc2362ate number of frames/time between stop and end of trajectory and plot stop time.
 
 
 # Find lysis trajectories
-lysisTraj, lysisVelocityArray, stopTimeArray, lysisDirCorrelationArray, nonLysisTraj, nonLysisVelocityArray = A.getLysisTrajectories(A, BIGLIST);
+#lysisTraj, lysisVelocityArray, stopTimeArray, lysisDirCorrelationArray, nonLysisTraj, nonLysisVelocityArray = A.getLysisTrajectories(A, BIGLIST);
 
 # Calculate average velocity of non-lysis trajectories
-averageVelocityArray, averageVelocityArray_error = A.calcAverageVelocity(A, nonLysisVelocityArray);
+#averageVelocityArray, averageVelocityArray_error = A.calcAverageVelocity(A, nonLysisVelocityArray);
 
 #Convert average velocity to micrometers per second and plot velocity distribution:
-averageVelocityArray_micrometers = averageVelocityArray*pixelsToMicrons;
-A.plotHistogram(averageVelocityArray_micrometers, xlbl='Average Velocity (micrometers)');
+#averageVelocityArray_micrometers = averageVelocityArray*pixelsToMicrons;
+#A.plotHistogram(averageVelocityArray_micrometers, xlbl='Average Velocity (micrometers)');
 
 
 #Convert velocity to micrometers per second and plot lysis trajectory:
-lysisVelocityArray = pixelsToMicrons*lysisVelocityArray;
-stopTimeArray = timePerFrame*stopTimeArray;
+#lysisVelocityArray = pixelsToMicrons*lysisVelocityArray;
+#stopTimeArray = timePerFrame*stopTimeArray;
 
 #Plot lysis trajectory
 #A.plotLysisTrajectory(A, lysisVelocityArray, stopTimeArray);
@@ -682,7 +683,7 @@ stopTimeArray = timePerFrame*stopTimeArray;
 #A.plotRandomTrajectories(A, lysisVelocityArray, 'time (seconds)', 'Velocity (pixels)');
 
 
-ID = 14;
+ID = 2362;
 A.plotTrajWithSpecificID(A, BIGLIST, ID);
 #A.plotTrajWithSpecificID(A, BIGLIST, ID, plotRodLength=1);
 
