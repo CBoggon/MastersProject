@@ -351,7 +351,8 @@ diffusionThreshold = diffusionThreshold+1.;
 
 #filename = '../../../../../../../Volumes/MyBook/MastersProject/Data/20180213/20180213Surface2Samples-50fpsx20Mag/DDMmovies180213-151805-AsImageSequences/Output-Pos02_Movie0001/filterTracks2DtOutput/tracks_fixed.dat';
 #fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid1-25fpsx20Mag2000Frames/DDMmovies180227-143931-AsImageSequences/Output-Pos02_Movie0010';
-fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid1-25fpsx20Mag2000Frames/DDMmovies180227-143931-AsImageSequences/Output-Pos03_Movie0007';
+#fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid1-25fpsx20Mag2000Frames/DDMmovies180227-143931-AsImageSequences/Output-Pos03_Movie0007';
+fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid1-25fpsx20Mag2000Frames/DDMmovies180227-143931-AsImageSequences/Output-Pos01_Movie0009';
 
 ### UBUNTU ######
 #fileDir = '../../../../../../../media/cameron/MyBook/MastersProject/Data/20180213/20180213Surface2Samples-50fpsx20Mag/DDMmovies180213-152022-AsImageSequences/Output-Pos03_Movie0027';
@@ -431,7 +432,7 @@ if (len(sys.argv) > 3):
 
     A.appendTrajectory(A, BIGLIST_traj, IDs, stopTime_frame, timeStopped, lysisEventDataFileDir, lysisEventDataFile, trajArrayName);
 
-elif (len(sys.argv) > 2):
+elif (len(sys.argv) == 2 ):
     ## Add two BIGLIST trajectories together:
     print 'sys.argv[1] = '+str(sys.argv[1])
     ID = int(sys.argv[1]);

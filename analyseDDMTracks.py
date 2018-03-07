@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from toolsForBugs import readCoordinateFile     #to read positions.dat
 from toolsForBugs import readTrackingFile       #to read tracks.dat
 from scipy.optimize import curve_fit
+from scipy.stats import moment
 import sys
 
 ##########################################################################################################
@@ -215,7 +216,7 @@ class analyseTrajectories:
 #        return
 #
 
-    def __init__(self, minTrajLen, NumFramesToAverageOver, timePerFrame, pixelsToMicrons, minStopTimeThreshold, minStopVelocityThreshold, initialFrameNum, stoppingVelocityThreshold, diffusionThreshold, minSwimmingExponent, minTauVals):
+    def __init__(self, minTrajLen, NumFramesToAverageOver, timePerFrame, pixelsToMicrons, minStopTimeThreshold, minStopVelocityThreshold, initialFrameNum, stoppingVelocityThreshold, diffusionThreshold, minSwimmingExponent, minTauVals, BacteriaCounterFrame):
         self.timePerFrame = timePerFrame;   #For calculating the average velocity over one frame
         self.NumFramesToAverageOver = NumFramesToAverageOver;   #number of frames over which to calculate the displacement over before taking average.
         self.minTrajLen = minTrajLen;
@@ -227,6 +228,7 @@ class analyseTrajectories:
         self.diffusionThreshold = diffusionThreshold;   #Stopped bacteria still diffuse. Above this threshold, bacteria considered still swimming.
         self.minSwimmingExponent = minSwimmingExponent;     #min value of k in function <r**2> = Ct^k to define swimmer. Ideally, k = 2 for swimmer, k = 1 for diffuser and k = 0 for adherer.
         self.minTauVals = minTauVals;    #minimum number of of tau points used to calculate k for separating swimmers from diffusers.
+        self.BacteriaCounterFrame = BacteriaCounterFrame;
 
     def calcAverageVelocitiesForAllTraj(self, A, BIGLIST):        
         '''
@@ -246,24 +248,31 @@ class analyseTrajectories:
         velocityArray = [];   #Array of velocities throughout trajectories
         trajID = [];  
         k_exponentArray = [];
+        NBacteriaCounter = 0;
         i = 0;
         for i in range(0, len(BIGLIST)):   # iterate through trajectories
             if(len(BIGLIST[i]) < self.minTrajLen):
                 continue;
             else:
+                if (A.isInCounterFrame(BIGLIST[i]) == True):
+                    #Count bacterium.
+                    NBacteriaCounter = NBacteriaCounter+1;
+
                 temp_avVelocityAllTraj, temp_displacementArray, temp_velocityArray, k_exponent = A.calcAverageParticleVelocity(A, BIGLIST[i]);
                 
                 if (k_exponent == -10):
                     print 'curve fit failed for trajID = '+str(i);
                     continue;
                 
+                #Particle swimming
                 elif (k_exponent > self.minSwimmingExponent):
                     avVelocityAllTraj.append(temp_avVelocityAllTraj);
                     displacementArray.append(temp_displacementArray);
                     velocityArray.append(temp_velocityArray);
                     trajID.append(i);
                     k_exponentArray.append(k_exponent);
-
+                
+                #Particle either diffusing or a erroneous point from the tracking
                 else:
                     k_exponentArray.append(k_exponent);
                     continue;
@@ -274,7 +283,7 @@ class analyseTrajectories:
         velocityArray = np.asarray(velocityArray);
         k_exponentArray = np.asarray(k_exponentArray);
         
-        return avVelocityAllTraj, velocityArray, displacementArray, k_exponentArray 
+        return avVelocityAllTraj, velocityArray, displacementArray, k_exponentArray, NBacteriaCounter
     
 
     def calcDistBetweenPoints(self, xPositions, yPositions):
@@ -367,6 +376,14 @@ class analyseTrajectories:
             tau = tau + self.NumFramesToAverageOver;
 
         return meanSquaredDispArray, tauArray
+
+    def isInCounterFrame(self, BIGLIST_traj):
+        
+        if (BIGLIST_traj[0, 0] <= self.BacteriaCounterFrame and BIGLIST_traj[len(BIGLIST_traj)-1, 0] <= self.BacteriaCounterFrame):
+            return True
+        
+        else:
+            return False
 
 #    
 #        squaredDisplacementArray = displacementArray**2;
@@ -488,6 +505,32 @@ class analyseTrajectories:
 
         return
 
+    
+    def calculateSkewness(self, data00, data01, data02):
+        '''
+        Calculates Pearson's moment of skewness = mu_3/sigma**3
+        '''
+        skewPos00 = np.zeros(len(data00));
+        skewPos01 = np.zeros(len(data01));
+        skewPos02 = np.zeros(len(data02));
+        for i in range(0, len(data00)):
+            
+            #Normalise data:
+            data00[i] = data00[i]/np.mean(data00[i]);
+            data01[i] = data01[i]/np.mean(data01[i]);
+            data02[i] = data02[i]/np.mean(data02[i]);
+            
+            #Calculate skew
+            skewPos00[i] = moment(data00[i], moment=3)/(moment(data00[i], moment=2)**(3./2.));
+            skewPos01[i] = moment(data01[i], moment=3)/(moment(data01[i], moment=2)**(3./2.));
+            skewPos02[i] = moment(data02[i], moment=3)/(moment(data02[i], moment=2)**(3./2.));
+            
+            #skewPos00[i] = skew(data00[i])/(np.std(data00[i])**3);
+            #skewPos01[i] = skew(data01[i])/(np.std(data01[i])**3);
+            #skewPos02[i] = skew(data02[i])/(np.std(data02[i])**3);
+        
+        return skewPos00, skewPos01, skewPos02
+
 
     ### Calculate historgram to separate diffusers from bacteria stuck to surface
     def fitDiffusersAndSwimmers(self, x, C, k):
@@ -507,47 +550,138 @@ class analyseTrajectories:
         plt.savefig(outputFile);
 	#plt.show()
         return
+    
+    
+    # Plot distribution of velocities
+    def plotHistogramsInSameFig(self, data0_0, label0_0=np.array(None), data0_1=np.array(None), label0_1=np.array(None), data0_2=np.array(None), label0_2=np.array(None), data1_0=np.array(None), label1_0=np.array(None), data1_1=np.array(None), label1_1=np.array(None), data1_2=np.array(None), label1_2=np.array(None), data2_0=np.array(None), label2_0=np.array(None), data2_1=np.array(None), label2_1=np.array(None), data2_2=np.array(None), label2_2=np.array(None), xlbl='bins', ylbl='Normalised Frequency', xlim=np.array(None), saveFilename=None):
+        
+        plt.figure(figsize=(14, 6))
+        
+        data0_0 = data0_0/np.mean(data0_0);
+        
+        # Define bin size and alpha vals so that all histograms have same bin size
+        #binNum = np.linspace(0, 2, 30);
+        IQR = 0.75*np.max(data0_0) - 0.25*np.max(data0_0)
+        bins = 2*IQR/np.power(len(data0_0), 1./3);       #Calculate bin size using Freedman - Diaconis rule
+        binNum = np.linspace(0, 2, int(2./bins));
+        alphaVal = 0.3; 
+
+        #plot first subfigure
+        plt.subplot(1, 3, 1) 
+        plt.hist(data0_0[:], label=label0_0, bins=binNum, alpha=alphaVal);
+        
+        if (data0_1.all() != None):
+            data0_1 = data0_1/np.mean(data0_1);
+	    plt.hist(data0_1[:], label=label0_1, bins=binNum, alpha=alphaVal);
+	
+        if (data0_2.all() != None):
+            data0_2 = data0_2/np.mean(data0_2);
+	    plt.hist(data0_2[:], label=label0_2, bins=binNum, alpha=alphaVal);
+        
+        plt.xlabel(xlbl);
+        plt.ylabel(ylbl);
+        plt.title('Control')
+        plt.legend(loc='upper right');
+
+        #plot second subfigure
+        plt.subplot(1, 3, 2)
+        
+        if (data1_0.all() != None):
+            data1_0 = data1_0/np.mean(data1_0);
+            plt.hist(data1_0[:], label=label1_0, bins=binNum, alpha=alphaVal);
+        
+        if (data1_1.all() != None):
+            data1_1 = data1_1/np.mean(data1_1);
+	    plt.hist(data1_1[:], label=label1_1, bins=binNum, alpha=alphaVal);
+	
+        if (data1_2.all() != None):
+            data1_2 = data1_2/np.mean(data1_2);
+	    plt.hist(data1_2[:], label=label1_2, bins=binNum, alpha=alphaVal);
+        
+        plt.xlabel(xlbl);
+        #plt.ylabel(ylbl);
+        plt.title('Phage 1')
+        plt.legend(loc='upper right');
+        
+        #plot third subfigure
+        plt.subplot(1, 3, 3)
+        
+        if (data2_0.all() != None):
+            data2_0 = data2_0/np.mean(data2_0);
+            plt.hist(data2_0[:], label=label2_0, bins=binNum, alpha=alphaVal);
+        
+        if (data2_1.all() != None):
+            data2_1 = data2_1/np.mean(data2_1);
+	    plt.hist(data2_1[:], label=label2_1, bins=binNum, alpha=alphaVal);
+	
+        if (data2_2.all() != None):
+            data2_2 = data2_2/np.mean(data2_2);
+	    plt.hist(data2_2[:], label=label2_2, bins=binNum, alpha=alphaVal);
+        
+        plt.xlabel(xlbl);
+        #plt.ylabel(ylbl);
+        plt.title('Phage 2')
+        plt.legend(loc='upper right');
+        
+        if (saveFilename != None):
+            plt.savefig(saveFilename);
+	
+        #plt.show()
+        
+        return
 
     # Plot distribution of velocities
     def plotNormalisedHistograms(self, data00, label00=np.array(None), data01=np.array(None), label01=np.array(None), data02=np.array(None), label02=np.array(None), data03=np.array(None), label03=np.array(None), data04=np.array(None), label04=np.array(None), data05=np.array(None), label05=np.array(None), data06=np.array(None), label06=np.array(None), xlbl='bins', ylbl='Normalised Frequency', xlim=np.array(None), saveFilename=None):
         
-        binNum = 60;
+        '''
+        Note: Code normalises bin sizes according to bin size of data00.
+        '''
+        plt.figure(figsize=(10, 6))
+        data00 = data00/np.mean(data00);
+         
+        #binNum = np.linspace(0, 2, 30);
+        IQR = 0.75*np.max(data00) - 0.25*np.max(data00)
+        bins = 2*IQR/np.power(len(data00), 1./3);       #Calculate bin size using Freedman - Diaconis rule
+        binNum = np.linspace(0, 2, int(2./bins));
         alphaVal = 0.3;
-
-        plt.figure()
-        data00 = data00/len(data00);
-        weights = np.ones_like(data00)/float(len(data00));
-        plt.hist(data00[:], weights=weights, label=label00, bins=binNum, alpha=alphaVal);
+        
+        plt.hist(data00[:], label=label00, bins=binNum, alpha=alphaVal);
         
         if (data01.all() != None):
-            data01 = data01/len(data01);
-            weights = np.ones_like(data01)/float(len(data01));
-	    plt.hist(data01[:], weights=weights, label=label01, bins=binNum, alpha=alphaVal);
+            data01 = data01/np.mean(data01);
+            #weights = np.ones_like(data01)/float(len(data01));
+	    #plt.hist(data01[:], weights=weights, label=label01, bins=binNum, alpha=alphaVal);
+	    plt.hist(data01[:], label=label01, bins=binNum, alpha=alphaVal);
 	
         if (data02.all() != None):
-            data02 = data02/len(data02);
-            weights = np.ones_like(data02)/float(len(data02));
-	    plt.hist(data02[:], weights=weights, label=label02, bins=binNum, alpha=alphaVal);
+            data02 = data02/np.mean(data02);
+            #weights = np.ones_like(data02)/float(len(data02));
+	    #plt.hist(data02[:], weights=weights, label=label02, bins=binNum, alpha=alphaVal);
+	    plt.hist(data02[:], label=label02, bins=binNum, alpha=alphaVal);
         
         if (data03.all() != None):
-            data03 = data03/len(data03);
-            weights = np.ones_like(data03)/float(len(data03));
-	    plt.hist(data03[:], weights=weights, label=label03, bins=binNum, alpha=alphaVal);
+            data03 = data03/np.mean(data03);
+            #weights = np.ones_like(data03)/float(len(data03));
+	    #plt.hist(data03[:], weights=weights, label=label03, bins=binNum, alpha=alphaVal);
+	    plt.hist(data03[:], label=label03, bins=binNum, alpha=alphaVal);
         
         if (data04.all() != None):
-            data04 = data04/len(data04);
-            weights = np.ones_like(data04)/float(len(data04));
-	    plt.hist(data04[:], weights=weights, label=label04, bins=binNum, alpha=alphaVal);
+            data04 = data04/np.mean(data04);
+            #weights = np.ones_like(data04)/float(len(data04));
+	    #plt.hist(data04[:], weights=weights, label=label04, bins=binNum, alpha=alphaVal);
+	    plt.hist(data04[:], label=label04, bins=binNum, alpha=alphaVal);
         
         if (data05.all() != None):
-            data05 = data05/len(data05);
-            weights = np.ones_like(data05)/float(len(data05));
-	    plt.hist(data05[:], weights=weights, label=label05, bins=binNum, alpha=alphaVal);
+            data05 = data05/np.mean(data05);
+            #weights = np.ones_like(data05)/float(len(data05));
+	    #plt.hist(data05[:], weights=weights, label=label05, bins=binNum, alpha=alphaVal);
+	    plt.hist(data05[:], label=label05, bins=binNum, alpha=alphaVal);
         
         if (data06.all() != None):
-            data06 = data06/len(data06);
-            weights = np.ones_like(data01)/float(len(data06));
-	    plt.hist(data06[:], weights=weights, label=label06, bins=binNum, alpha=alphaVal);
+            data06 = data06/np.mean(data06);
+            #weights = np.ones_like(data01)/float(len(data06));
+	    #plt.hist(data06[:], weights=weights, label=label06, bins=binNum, alpha=alphaVal);
+	    plt.hist(data06[:], label=label06, bins=binNum, alpha=alphaVal);
         
 	plt.xlabel(xlbl);
 	plt.ylabel(ylbl);
@@ -652,8 +786,9 @@ class analyseTrajectories:
 
     # Plot up to five sets of data with y error bars on same graph 
 #    def plotDataSetsWithErrorBars(self, x0, y0, label0, y0_error=np.array(None), x1=np.array(None), y1=np.array(None), label1=None, y1_error=np.array(None), x2=np.array(None), y2=np.array(None), label2=None, y2_error=np.array(None), x3=np.array(None), y3=np.array(None), label3=None, y3_error=np.array(None), x4=np.array(None), y4=np.array(None), label4=None, y4_error=np.array(None), title=None, xlbl=None, ylbl=None):
-    def plotDataSetsWithErrorBars(self, x0, y0, label0, y0_error=np.array(None), x1=np.array(None), y1=np.array(None), y1_error=np.array(None), label1=None, x2=np.array(None), y2=np.array(None), y2_error=np.array(None), label2=None, x3=np.array(None), y3=np.array(None), y3_error=np.array(None), label3=None, x4=np.array(None), y4=np.array(None), y4_error=np.array(None), label4=None, title=None, xlbl=None, ylbl=None):
-        plt.figure()
+    def plotDataSetsWithErrorBars(self, x0, y0, label0, y0_error=np.array(None), x1=np.array(None), y1=np.array(None), y1_error=np.array(None), label1=None, x2=np.array(None), y2=np.array(None), y2_error=np.array(None), label2=None, x3=np.array(None), y3=np.array(None), y3_error=np.array(None), label3=None, x4=np.array(None), y4=np.array(None), y4_error=np.array(None), label4=None, title=None, xlbl=None, ylbl=None, plotLegend=True):
+        
+        plt.figure(figsize=(10, 6))
        
         if (y0_error.all() == None):
             plt.plot(x0, y0, 'x-', label=label0)
@@ -674,9 +809,9 @@ class analyseTrajectories:
         
         if(y3.all() != None): 
             if (y3_error.all() == None):
-                plt.plot(x3, y3, 's-', label=label3)
+                plt.plot(x3, y3, '-', label=label3)     #Removed 's-' so does not show data marker on this plot.
             else:
-                plt.errorbar(x3, y3, yerr=y3_error, fmt='s-', label = label3)
+                plt.errorbar(x3, y3, yerr=y3_error, fmt='-', label = label3)
         
         if(y4.all() != None): 
             if (y4_error.all() == None):
@@ -687,6 +822,7 @@ class analyseTrajectories:
         if(title != None): plt.suptitle(title);
         if(xlbl != None): plt.xlabel(xlbl);
         if(ylbl != None): plt.ylabel(ylbl);
+        if(plotLegend == True): plt.legend(loc='upper left');
 #        if(y1.all() != None): plt.legend(loc='upper right');
         #plt.legend(loc='upper right');
         #plt.rc('font', family='serif', size=15);
