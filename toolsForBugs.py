@@ -196,6 +196,7 @@ def plotPixelBias(X):
 	d=0.02
         R = arange(0.0, 1.0+d, d)
         y2,x2=histogram(mod(X[:,0], 1.0), bins = R, normed=1)
-	makehist(y2, x2, 'red', '-', 0, 1,'data in paper (met code voor opschonen)')
+	#makehist(y2, x2, 'red', '-', 0, 1,'data in paper (met code voor opschonen)')
+	plt.hist(y2, x2, 'red', '-', 0, 1,'data in paper (met code voor opschonen)')
 
 	legend()	

@@ -2,9 +2,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 #from trackReaderClass import readTracks
-from toolsForBugs import readCoordinateFile     #to read positions.dat
+#from toolsForBugs import readCoordinateFile     #to read positions.dat
 from toolsForBugs import readTrackingFile       #to read tracks.dat
 from scipy.optimize import curve_fit
+import datetime
 import sys
 import os
 
@@ -15,8 +16,8 @@ plt.close('all');
 ### Declare Variables
 NumFramesInVideo = 2000;
 initialFrameNum = 1.0;
-NumFramesToAverageOver = 3; #Average over a number of frames to reduce the random effects of diffusion on the calculate swimming velocity
-minTrajLen = 10*NumFramesToAverageOver;
+NumFramesToAverageOver = 1; #Average over a number of frames to reduce the random effects of diffusion on the calculate swimming velocity
+minTrajLen = 3*NumFramesToAverageOver+1;  
 fps = 50;
 timePerFrame = 1./fps;
 pixelsToMicrons = 0.702;    # For x20 Mag
@@ -24,15 +25,15 @@ pixelsToMicrons = 0.702;    # For x20 Mag
 
 minStopTimeThreshold = 1*fps;       #minimum length of time a bacteria is expected to stop before lysing. (frames)
 minStopVelocityThreshold = 18;      #minimum drop in average velocity that defines a lysis event (micrometers per second)
-stoppingVelocityThreshold = 0.2
+stoppingVelocityThreshold = 0.2;
 D = 0.34;    #Diffusion constant micrometers/second
 diffusionThreshold = (1/(float(NumFramesToAverageOver)*timePerFrame))*np.sqrt(4*D*(1/pixelsToMicrons)**2*(float(NumFramesToAverageOver)*timePerFrame));     #Above this threshold, bacteria considered to still be swimming.
-minSwimmingExponent = 1.7;
-minTauVals = 2;
+minSwimmingExponent = 1.3;
+minTauVals = 1;
 BacteriaCounterFrame = 200.;
 
 lengthOfVideo = timePerFrame*NumFramesInVideo;  #Total length of video in seconds
-maxVids = 16;   #Define max number of videos to analyse if the last videos have very little to analyse in them.
+maxVids = 2;   #Define max number of videos to analyse if the last videos have very little to analyse in them.
 
 
 # Choose whether to use manually added times or calculated times in script.
@@ -139,17 +140,17 @@ for measurement in measurementList:
             
             else:
 
-		if (folder[7:12] == 'Pos00' and file00Counter >= maxVids):
+                if (folder[7:12] == 'Pos00' and file00Counter >= maxVids):
                     #Skip video if already calculated up to maxVids for pos00.
-		    continue;
+                    continue;
 		
-		if (folder[7:12] == 'Pos01' and file01Counter >= maxVids):
+                if (folder[7:12] == 'Pos01' and file01Counter >= maxVids):
                     #Skip video if already calculated up to maxVids for pos01.
-		    continue;
+                    continue;
 		
-		if (folder[7:12] == 'Pos02' and file02Counter >= maxVids):
+                if (folder[7:12] == 'Pos02' and file02Counter >= maxVids):
                     #Skip video if already calculated up to maxVids for pos02.
-		    continue;
+                    continue;
 
                 print '\n######## Calculating average v for folder: '+measurement+'/'+folder+' #########\n'
 
@@ -161,6 +162,7 @@ for measurement in measurementList:
                 
                 # Calculate average velocity in micrometers/second
                 AvVelocityArray_micrometers = pixelsToMicrons*AvVelocityArray;
+                #AvVelocityArray_micrometers = AvVelocityArray;
 
                 # Fit Schulz distribution to data:
                 #fit_params, sigma = A.plotHistogramWithCurveFit(A, AvVelocityArray_micrometers, xlbl='Average Velocity (micrometers)', fit='schulz');
@@ -179,10 +181,10 @@ for measurement in measurementList:
                     else:
                         velocityPos00.append(np.mean(AvVelocityArray_micrometers));
                         velocityErrorPos00.append(np.std(AvVelocityArray_micrometers)/2);   # standard deviation
-			
+		    
                     fullTraj_velocityPos00.append(AvVelocityArray_micrometers);
 		    NArrayPos00.append(NBacteriaCounter);
-		    NArrayErrorPos00.append(np.sqrt(NBacteriaCounter));     #Assume n taken from poisson distribution
+		    NArrayErrorPos00.append(np.sqrt(NBacteriaCounter)/2);     #Assume n taken from poisson distribution
                     timePos00.append(timeCounterPos00);
                     file00Counter = file00Counter + 1;
                     timeCounterPos00 = timeCounterPos00+lengthOfVideo;
@@ -202,7 +204,7 @@ for measurement in measurementList:
                     
                     fullTraj_velocityPos01.append(AvVelocityArray_micrometers);
 		    NArrayPos01.append(NBacteriaCounter);
-		    NArrayErrorPos01.append(np.sqrt(NBacteriaCounter));
+		    NArrayErrorPos01.append(np.sqrt(NBacteriaCounter)/2);
                     timePos01.append(timeCounterPos01);
                     file01Counter = file01Counter + 1;
                     timeCounterPos01 = timeCounterPos01+lengthOfVideo;
@@ -222,7 +224,7 @@ for measurement in measurementList:
                     
 		    fullTraj_velocityPos02.append(AvVelocityArray_micrometers);
 		    NArrayPos02.append(NBacteriaCounter);
-		    NArrayErrorPos02.append(np.sqrt(NBacteriaCounter));
+		    NArrayErrorPos02.append(np.sqrt(NBacteriaCounter)/2);
                     timePos02.append(timeCounterPos02);
                     file02Counter = file02Counter + 1;
                     timeCounterPos02 = timeCounterPos02+lengthOfVideo;
@@ -265,40 +267,58 @@ if (manualTimes == 1):
     timePos02 = time2[0:maxVids];
 
 #Plot overlapping, normalised histograms for each position at different times to see if there is a difference in shape.
-timesToPlotHist = [0, 4, 8, 12];
-#timesToPlotHist = [0, 1, 0, 1, 0];
+#timesToPlotHist = [0, 3, 6, 9];
+#timesToPlotHist = [2, 4, 6, 7, 8];
+timesToPlotHist = [0, 1, 0, 1, 0];
 #timesToPlotHist = [0, 0, 0, 0, 0];
+
+labelPos00_0 = str(datetime.timedelta(seconds=round(timePos00[timesToPlotHist[0]],0)))[2:10];
+labelPos00_1 = str(datetime.timedelta(seconds=round(timePos00[timesToPlotHist[1]],0)))[2:10];
+labelPos00_2 = str(datetime.timedelta(seconds=round(timePos00[timesToPlotHist[2]],0)))[2:10];
+labelPos00_3 = str(datetime.timedelta(seconds=round(timePos00[timesToPlotHist[3]],0)))[2:10];
+
+labelPos01_0 = str(datetime.timedelta(seconds=round(timePos01[timesToPlotHist[0]],0)))[2:10];
+labelPos01_1 = str(datetime.timedelta(seconds=round(timePos01[timesToPlotHist[1]],0)))[2:10];
+labelPos01_2 = str(datetime.timedelta(seconds=round(timePos01[timesToPlotHist[2]],0)))[2:10];
+labelPos01_3 = str(datetime.timedelta(seconds=round(timePos01[timesToPlotHist[3]],0)))[2:10];
+
+labelPos02_0 = str(datetime.timedelta(seconds=round(timePos02[timesToPlotHist[0]],0)))[2:10];
+labelPos02_1 = str(datetime.timedelta(seconds=round(timePos02[timesToPlotHist[1]],0)))[2:10];
+labelPos02_2 = str(datetime.timedelta(seconds=round(timePos02[timesToPlotHist[2]],0)))[2:10];
+labelPos02_3 = str(datetime.timedelta(seconds=round(timePos02[timesToPlotHist[3]],0)))[2:10];
 
 #Convert time to minutes
 timePos00 = timePos00/60;
 timePos01 = timePos01/60;
 timePos02 = timePos02/60;
 
-A.plotNormalisedHistograms(fullTraj_velocityPos00[timesToPlotHist[0]], str(round(timePos00[timesToPlotHist[0]],2))+' mins', fullTraj_velocityPos00[timesToPlotHist[1]], str(round(timePos00[timesToPlotHist[1]],2))+' mins', fullTraj_velocityPos00[timesToPlotHist[2]], str(round(timePos00[timesToPlotHist[2]],2))+' mins', fullTraj_velocityPos00[timesToPlotHist[3]], str(round(timePos00[timesToPlotHist[3]],2))+' mins', xlbl='Normalised Velocity (v/<v>)', saveFilename=outputSaveFileDir+'Pos00Histograms');
 
-A.plotNormalisedHistograms(fullTraj_velocityPos01[timesToPlotHist[0]], str(round(timePos01[timesToPlotHist[0]],2))+' mins', fullTraj_velocityPos01[timesToPlotHist[1]], str(round(timePos01[timesToPlotHist[1]],2))+' mins', fullTraj_velocityPos01[timesToPlotHist[2]], str(round(timePos01[timesToPlotHist[2]],2))+' mins', fullTraj_velocityPos01[timesToPlotHist[3]], str(round(timePos01[timesToPlotHist[3]],2))+' mins', xlbl='Normalised Velocity (v/<v>)', saveFilename=outputSaveFileDir+'Pos01Histograms');
 
-A.plotNormalisedHistograms(fullTraj_velocityPos02[timesToPlotHist[0]], str(round(timePos02[timesToPlotHist[0]],2))+' mins', fullTraj_velocityPos02[timesToPlotHist[1]], str(round(timePos02[timesToPlotHist[1]],2))+' mins', fullTraj_velocityPos02[timesToPlotHist[2]], str(round(timePos02[timesToPlotHist[2]],2))+' mins', fullTraj_velocityPos02[timesToPlotHist[3]], str(round(timePos02[timesToPlotHist[3]],2))+' mins', xlbl='Normalised Velocity (v/<v>)', saveFilename=outputSaveFileDir+'Pos02Histograms');
+A.plotNormalisedHistograms(fullTraj_velocityPos00[timesToPlotHist[0]], labelPos00_0, fullTraj_velocityPos00[timesToPlotHist[1]], labelPos00_1, fullTraj_velocityPos00[timesToPlotHist[2]], labelPos00_2, fullTraj_velocityPos00[timesToPlotHist[3]], labelPos00_3, xlbl='Normalised Velocity (v/<v>)', plotAsLines=True, saveFilename=outputSaveFileDir+'Pos00Histograms');
+
+A.plotNormalisedHistograms(fullTraj_velocityPos01[timesToPlotHist[0]], labelPos01_0, fullTraj_velocityPos01[timesToPlotHist[1]], labelPos01_1, fullTraj_velocityPos01[timesToPlotHist[2]], labelPos01_2, fullTraj_velocityPos01[timesToPlotHist[3]], labelPos01_3, xlbl='Normalised Velocity (v/<v>)', plotAsLines=True, saveFilename=outputSaveFileDir+'Pos01Histograms');
+
+A.plotNormalisedHistograms(fullTraj_velocityPos02[timesToPlotHist[0]], labelPos02_0, fullTraj_velocityPos02[timesToPlotHist[1]], labelPos02_1, fullTraj_velocityPos02[timesToPlotHist[2]], labelPos02_2, fullTraj_velocityPos02[timesToPlotHist[3]], labelPos02_3, xlbl='Normalised Velocity (v/<v>)', plotAsLines=True, saveFilename=outputSaveFileDir+'Pos02Histograms');
 
 
 #Plot histograms of all positions on same figure, shortly after infection 
-A.plotHistogramsInSameFig(fullTraj_velocityPos00[0], str(round(timePos00[0],2))+' mins', data0_1=fullTraj_velocityPos00[1], label0_1=str(round(timePos00[1],2))+' mins', data1_0=fullTraj_velocityPos01[0], label1_0=str(round(timePos01[0],2))+' mins', data1_1=fullTraj_velocityPos01[1], label1_1=str(round(timePos01[1],2))+' mins', data2_0=fullTraj_velocityPos02[0], label2_0=str(round(timePos02[0],2))+' mins', data2_1=fullTraj_velocityPos02[1], label2_1=str(round(timePos02[1],2))+' mins', xlbl='Normalised Velocity (v/<v>)', saveFilename=outputSaveFileDir+'HistogramsShortlyAfterInfection');
+A.plotHistogramsInSameFig(fullTraj_velocityPos00[0], labelPos00_0, data0_1=fullTraj_velocityPos00[1], label0_1=labelPos00_1, data1_0=fullTraj_velocityPos01[0], label1_0=labelPos01_0, data1_1=fullTraj_velocityPos01[1], label1_1=labelPos01_1, data2_0=fullTraj_velocityPos02[0], label2_0=labelPos02_0, data2_1=fullTraj_velocityPos02[1], label2_1=labelPos02_1, xlbl='Normalised Velocity (v/<v>)', saveFilename=outputSaveFileDir+'HistogramsShortlyAfterInfection');
 
 
 # Plot lysis line
-lysisLine_x = np.array([1.0 for i in range(0,9)]);
+lysisLine_x = np.array([0.5 for i in range(0,9)]);
 lysisLine_y = np.array([5.0*i for i in range(0,9)]);
-
+N_lysisLine_y = np.array([45.0*i for i in range(0,9)]);
 
 #Plot skewness of histograms vs time
 skewPos00, skewPos01, skewPos02 = A.calculateSkewness(fullTraj_velocityPos00, fullTraj_velocityPos01, fullTraj_velocityPos02);
-A.plotDataSetsWithErrorBars(timePos00, skewPos00, 'Pos00', x1=timePos01, y1=skewPos01, label1='Pos01', x2=timePos02, y2=skewPos02, label2='Pos02', title='Skewness of velocity distribution over time', xlbl='Time (Minutes)', ylbl='Pearsons Moment Coefficient of Skewness');
-outputFile = outputSaveFileDir+'SkewsTime';
+A.plotDataSetsWithErrorBars(timePos00, skewPos00, 'Control', x1=timePos01, y1=skewPos01, label1='Phage 1', x2=timePos02, y2=skewPos02, label2='Phage 2', title='Skewness of velocity distribution over time', xlbl='Time (Minutes)', ylbl='Pearsons Moment Coefficient of Skewness');
+outputFile = outputSaveFileDir+'SkewVsTime';
 plt.savefig(outputFile);
 
 
-#Plot motile number of motile bacteria vs time
-A.plotDataSetsWithErrorBars(timePos00, NArrayPos00, 'N Pos00', y0_error=NArrayErrorPos00, x1=timePos01, y1=NArrayPos01, y1_error=NArrayErrorPos01, label1='N Pos01', x2=timePos02, y2=NArrayPos02, y2_error=NArrayErrorPos02, label2='N Pos02', title='Tracked Number of Motile Bacteria', xlbl='Time (Minutes)', ylbl='Number of Tracked Bacteria');
+#Plot number of motile bacteria vs time
+A.plotDataSetsWithErrorBars(timePos00, NArrayPos00, 'Control', y0_error=NArrayErrorPos00, x1=timePos01, y1=NArrayPos01, y1_error=NArrayErrorPos01, label1='Phage 1', x2=timePos02, y2=NArrayPos02, y2_error=NArrayErrorPos02, label2='Phage 2', x3=lysisLine_x, y3=N_lysisLine_y, label3='Phage Infection', title='Tracked Number of Motile Bacteria', xlbl='Time (Minutes)', ylbl='Number of Tracked Bacteria');
 outputFile = outputSaveFileDir+'NVsTime';
 plt.savefig(outputFile);
 

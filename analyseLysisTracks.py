@@ -74,12 +74,13 @@ class analyseTrajectories:
                 
                 else:
                     #Detected Lysis event. Return trajectory details.
-                    stopFrame = (counter+2)*self.RunningAvTrajLen;
+                    stopFrame = (counter+3)*self.RunningAvTrajLen;
+                    stopTime = stopFrame*self.NumFramesToAverageOver+int(traj_frames[0]);
                     timeStopped = float((len(velocityArray) - len(velocityArray[0:stopFrame]))*self.NumFramesToAverageOver);
-                    print 'Frame at which stopping event occurs = '+str(stopFrame*self.NumFramesToAverageOver+int(traj_frames[0]));
+                    print 'Frame at which stopping event occurs = '+str(stopTime);
                     #A.plotDataSetsWithErrorBars(traj_frames[1:len(traj_frames)], velocityArray, 'Velocity', None, traj_frames[2:len(traj_frames)], runningVelocityAverage, y1_error=runningVelocityAverage_error, label1='Average', title='Lysis Event', xlbl='frame', ylbl='Velocity');
-            
-                    return stopFrame, timeStopped, velocityArray, runningVelocityAverage, runningVelocityAverage_error, traj_frames, directionCorrelationArray
+                    
+                    return stopTime, timeStopped, velocityArray, runningVelocityAverage, runningVelocityAverage_error, traj_frames, directionCorrelationArray
             
             else:
                 counter = counter + counterJump;
@@ -278,8 +279,9 @@ class analyseTrajectories:
     # Plot up to five sets of data with y error bars on same graph 
     def plotDataSetsWithErrorBars(self, x0, y0, label0, y0_error=np.array(None), x1=np.array(None), y1=np.array(None), y1_error=np.array(None), label1=None, x2=np.array(None), y2=np.array(None), y2_error=np.array(None), label2=None, x3=np.array(None), y3=np.array(None), y3_error=np.array(None), label3=None, x4=np.array(None), y4=np.array(None), y4_error=np.array(None), label4=None, title=None, xlbl=None, ylbl=None):
         
-        plt.figure()
-       
+        plt.figure(figsize=(14, 6))
+        plt.rc('font', family='serif', size=12);
+
         print 'y0_error:'
         print y0_error
 
@@ -352,7 +354,10 @@ diffusionThreshold = diffusionThreshold+1.;
 #filename = '../../../../../../../Volumes/MyBook/MastersProject/Data/20180213/20180213Surface2Samples-50fpsx20Mag/DDMmovies180213-151805-AsImageSequences/Output-Pos02_Movie0001/filterTracks2DtOutput/tracks_fixed.dat';
 #fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid1-25fpsx20Mag2000Frames/DDMmovies180227-143931-AsImageSequences/Output-Pos02_Movie0010';
 #fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid1-25fpsx20Mag2000Frames/DDMmovies180227-143931-AsImageSequences/Output-Pos03_Movie0007';
-fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid1-25fpsx20Mag2000Frames/DDMmovies180227-143931-AsImageSequences/Output-Pos01_Movie0009';
+#fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid1-25fpsx20Mag2000Frames/DDMmovies180227-143931-AsImageSequences/Output-Pos01_Movie0009';
+#fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid2-25fpsx20Mag2000Frames/DDMmovies180227-155825-AsImageSequences/Output-Pos01_Movie0009';
+#fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid2-25fpsx20Mag2000Frames/DDMmovies180227-155825-AsImageSequences/Output-Pos01_Movie0013';
+fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid2-25fpsx20Mag2000Frames/DDMmovies180227-155825-AsImageSequences/Output-Pos02_Movie0010';
 
 ### UBUNTU ######
 #fileDir = '../../../../../../../media/cameron/MyBook/MastersProject/Data/20180213/20180213Surface2Samples-50fpsx20Mag/DDMmovies180213-152022-AsImageSequences/Output-Pos03_Movie0027';
@@ -422,8 +427,6 @@ if (len(sys.argv) > 3):
 
     stopTime_frame, timeStopped, velocityArray, runningVelocityAverage, runningVelocityAverage_error, traj_frames, directionCorrelationArray = A.plotTrajWithSpecificID(A, BIGLIST_traj, ID);
 
-    plt.show()
-
     IDs = str(ID)+'+'+str(ID2)+'+'+str(ID3);
     trajArrayName = fileDir[len(fileDir)-15:len(fileDir)]+'_ID'+str(ID);
 
@@ -432,7 +435,7 @@ if (len(sys.argv) > 3):
 
     A.appendTrajectory(A, BIGLIST_traj, IDs, stopTime_frame, timeStopped, lysisEventDataFileDir, lysisEventDataFile, trajArrayName);
 
-elif (len(sys.argv) == 2 ):
+elif (len(sys.argv) == 3):
     ## Add two BIGLIST trajectories together:
     print 'sys.argv[1] = '+str(sys.argv[1])
     ID = int(sys.argv[1]);
@@ -444,8 +447,6 @@ elif (len(sys.argv) == 2 ):
     BIGLIST_traj = A.addBIGLISTTrajectories(A, BIGLIST[ID], BIGLIST[ID2]);
 
     stopTime_frame, timeStopped, velocityArray, runningVelocityAverage, runningVelocityAverage_error, traj_frames, directionCorrelationArray = A.plotTrajWithSpecificID(A, BIGLIST_traj, ID);
-
-    plt.show()
 
     IDs = str(ID)+'+'+str(ID2)
     trajArrayName = fileDir[len(fileDir)-15:len(fileDir)]+'_ID'+str(ID);
