@@ -28,7 +28,7 @@ minStopVelocityThreshold = 18;      #minimum drop in average velocity that defin
 stoppingVelocityThreshold = 0.2;
 D = 0.34;    #Diffusion constant micrometers/second
 diffusionThreshold = (1/(float(NumFramesToAverageOver)*timePerFrame))*np.sqrt(4*D*(1/pixelsToMicrons)**2*(float(NumFramesToAverageOver)*timePerFrame));     #Above this threshold, bacteria considered to still be swimming.
-minSwimmingExponent = 1.3;
+minSwimmingExponent = 1.5;
 minTauVals = 1;
 BacteriaCounterFrame = 200.;
 
@@ -64,12 +64,13 @@ plotCurveFittedData = 0;
 
 #fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-135326-AsImageSequences/';
 #fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-140137-AsImageSequences/';
-fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/';
+#fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/';
 
 ## UBUNTU ###
 #fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-135326-AsImageSequences/';
 #fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-140137-AsImageSequences/';
 #fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/';
+fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/';
 
 trackingFile = '/filterTracks2DtOutput/tracks_fixed.dat';
 
@@ -78,7 +79,8 @@ trackingFile = '/filterTracks2DtOutput/tracks_fixed.dat';
 ##### Create output file directory where tracking plots will be saved #####
 #outputSaveFileDir = fileDir+'trackingOutput/';
 #outputSaveFileDir = '../../Data/Results/DDM/';
-outputSaveFileDir = '../../../../../../../../Volumes/CBOGGONUSB/Data/DDMResults/';
+#outputSaveFileDir = '../../../../../../../../Volumes/CBOGGONUSB/Data/DDMResults/';
+outputSaveFileDir = '../../../../../../../media/cameron/CBOGGONUSB/Data/DDMResults/';
 
 try:
     os.stat(outputSaveFileDir)

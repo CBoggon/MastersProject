@@ -401,10 +401,11 @@ class analyseTrajectories:
 
         init_vals = [1.0, 1.1, 0.5];     # for [amp, cen, wid]
         try:
+            #best_vals, covar = curve_fit(A.fitMSDEquation, tauArray[1:4], meanSquaredDispArray[1:4], p0=init_vals, bounds=((0, 0, -2.), (3., 3., 2.)));
             best_vals, covar = curve_fit(A.fitMSDEquation, tauArray[1:4], meanSquaredDispArray[1:4], p0=init_vals);
             #print 'best_vals = '+str(best_vals);
             s = best_vals[2];
-            v = best_vals[1]/self.timePerFrame;
+            v = np.absolute(best_vals[1])/self.timePerFrame;	#take magnitude as negative value does not matter in equation as squared
             D = best_vals[0];
             #print 'velocity fit values; s = %f, v = %f, D = %f' % tuple(best_vals)
         
@@ -603,7 +604,7 @@ class analyseTrajectories:
     
     
     # Plot distribution of velocities
-    def plotHistogramsInSameFig(self, data0_0, label0_0=np.array(None), data0_1=np.array(None), label0_1=np.array(None), data0_2=np.array(None), label0_2=np.array(None), data0_3=np.array(None), label0_3=np.array(None), data1_0=np.array(None), label1_0=np.array(None), data1_1=np.array(None), label1_1=np.array(None), data1_2=np.array(None), label1_2=np.array(None), data1_3=np.array(None), label1_3=np.array(None), data2_0=np.array(None), label2_0=np.array(None), data2_1=np.array(None), label2_1=np.array(None), data2_2=np.array(None), label2_2=np.array(None), data2_3=np.array(None), label2_3=np.array(None), xlbl='bins', ylbl='Normalised Frequency', xlim=np.array(None), plotAsLines=True, saveFilename=None):
+    def plotHistogramsInSameFig(self, data0_0, label0_0=np.array(None), data0_1=np.array(None), label0_1=np.array(None), data0_2=np.array(None), label0_2=np.array(None), data0_3=np.array(None), label0_3=np.array(None), data1_0=np.array(None), label1_0=np.array(None), data1_1=np.array(None), label1_1=np.array(None), data1_2=np.array(None), label1_2=np.array(None), data1_3=np.array(None), label1_3=np.array(None), data2_0=np.array(None), label2_0=np.array(None), data2_1=np.array(None), label2_1=np.array(None), data2_2=np.array(None), label2_2=np.array(None), data2_3=np.array(None), label2_3=np.array(None), xlbl='bins', ylbl='Normalised Frequency', xlim=np.array(None), plotAsLines=True, saveFilename=None, binNum=None):
         
         plt.figure(figsize=(14, 6))
         plt.rc('font', family='serif', size=12);
@@ -611,12 +612,13 @@ class analyseTrajectories:
         data0_0 = data0_0/np.mean(data0_0);
         weights = np.ones_like(data0_0)/float(len(data0_0));
         
-        # Define bin size and alpha vals so that all histograms have same bin size
-        #binNum = np.linspace(0, 2, 30);
-        IQR = 0.75*np.max(data0_0) - 0.25*np.max(data0_0)
-        bins = IQR/np.power(len(data0_0), 1./3);       #Calculate bin size using Freedman - Diaconis rule. This is a bit big so divided by 2.
-        binNum = np.linspace(0, 2, int(2./bins));
         alphaVal = 0.3; 
+	if (binNum == None):
+            #binNum = np.linspace(0, 2, 30);
+            IQR = 0.75*np.max(data0_0) - 0.25*np.max(data0_0)
+            #bins = IQR/np.power(len(data00), 1./3);       #Calculate bin size using Freedman - Diaconis rule. This is a bit big so divided by 2.
+            bins = 0.5*IQR/np.power(len(data0_0), 1./3); #TEMP BINS
+            binNum = np.linspace(0, 2, int(2./bins));
 
         #plot first subfigure
         plt.subplot(1, 3, 1)
@@ -779,7 +781,7 @@ class analyseTrajectories:
         return
 
     # Plot distribution of velocities
-    def plotNormalisedHistograms(self, data00, label00=np.array(None), data01=np.array(None), label01=np.array(None), data02=np.array(None), label02=np.array(None), data03=np.array(None), label03=np.array(None), data04=np.array(None), label04=np.array(None), data05=np.array(None), label05=np.array(None), data06=np.array(None), label06=np.array(None), xlbl='bins', ylbl='Normalised Frequency', xlim=np.array(None), plotAsLines=False, saveFilename=None):
+    def plotNormalisedHistograms(self, data00, label00=np.array(None), data01=np.array(None), label01=np.array(None), data02=np.array(None), label02=np.array(None), data03=np.array(None), label03=np.array(None), data04=np.array(None), label04=np.array(None), data05=np.array(None), label05=np.array(None), data06=np.array(None), label06=np.array(None), xlbl='bins', ylbl='Normalised Frequency', xlim=np.array(None), plotAsLines=False, saveFilename=None, binNum=None):
         
         '''
         Note: Code normalises bin sizes according to bin size of data00.
@@ -787,16 +789,16 @@ class analyseTrajectories:
 
         plt.figure(figsize=(10, 6))
         plt.rc('font', family='serif', size=12);
-        #data00 = data00/np.mean(data00);
-        data00 = data00/len(data00);
-         
-        #binNum = np.linspace(0, 2, 30);
-        IQR = 0.75*np.max(data00) - 0.25*np.max(data00)
-        #bins = IQR/np.power(len(data00), 1./3);       #Calculate bin size using Freedman - Diaconis rule. This is a bit big so divided by 2.
-        bins = 0.25*IQR/np.power(len(data00), 1./3); #TEMP BINS
-        binNum = np.linspace(0, 2, int(2./bins));
-        alphaVal = 0.3;
+        data00 = data00/np.mean(data00);
         
+        alphaVal = 0.3;
+	if (binNum == None):
+            #binNum = np.linspace(0, 2, 30);
+            IQR = 0.75*np.max(data00) - 0.25*np.max(data00)
+            #bins = IQR/np.power(len(data00), 1./3);       #Calculate bin size using Freedman - Diaconis rule. This is a bit big so divided by 2.
+            bins = 0.5*IQR/np.power(len(data00), 1./3); #TEMP BINS
+            binNum = np.linspace(0, 2, int(2./bins));
+		
         weights = np.ones_like(data00)/float(len(data00));
         if (plotAsLines == True):
             y_data00,binEdges = np.histogram(data00[:], weights=weights, bins=binNum);
@@ -806,8 +808,7 @@ class analyseTrajectories:
             plt.hist(data00[:], weights=weights, label=label00, bins=binNum, alpha=alphaVal); 
         
         if (data01.all() != None):
-            #data01 = data01/np.mean(data01);
-            data01 = data01/len(data01);
+            data01 = data01/np.mean(data01);
             weights = np.ones_like(data01)/float(len(data01));
             
             if (plotAsLines == True):
@@ -818,8 +819,7 @@ class analyseTrajectories:
                 plt.hist(data01[:], weights=weights, label=label01, bins=binNum, alpha=alphaVal);
 	
         if (data02.all() != None):
-            #data02 = data02/np.mean(data02);
-            data02 = data02/len(data02);
+            data02 = data02/np.mean(data02);
             weights = np.ones_like(data02)/float(len(data02));
             
             if (plotAsLines == True):
@@ -830,8 +830,7 @@ class analyseTrajectories:
 	        plt.hist(data02[:], weights=weights, label=label02, bins=binNum, alpha=alphaVal);
         
         if (data03.all() != None):
-            #data03 = data03/np.mean(data03);
-            data03 = data03/len(data03);
+            data03 = data03/np.mean(data03);
             weights = np.ones_like(data03)/float(len(data03));
             
             if (plotAsLines == True):
@@ -842,8 +841,7 @@ class analyseTrajectories:
 	        plt.hist(data03[:], weights=weights, label=label03, bins=binNum, alpha=alphaVal);
         
         if (data04.all() != None):
-            #data04 = data04/np.mean(data04);
-            data04 = data04/len(data04);
+            data04 = data04/np.mean(data04);
             weights = np.ones_like(data04)/float(len(data04));
             
             if (plotAsLines == True):
@@ -854,8 +852,7 @@ class analyseTrajectories:
 	        plt.hist(data04[:], weights=weights, label=label04, bins=binNum, alpha=alphaVal);
         
         if (data05.all() != None):
-            #data05 = data05/np.mean(data05);
-            data05 = data05/len(data05);
+            data05 = data05/np.mean(data05);
             weights = np.ones_like(data05)/float(len(data05));
             
             if (plotAsLines == True):
@@ -866,8 +863,7 @@ class analyseTrajectories:
 	        plt.hist(data05[:], weights=weights, label=label05, bins=binNum, alpha=alphaVal);
         
         if (data06.all() != None):
-            #data06 = data06/np.mean(data06);
-            data06 = data06/len(data06);
+            data06 = data06/np.mean(data06);
             weights = np.ones_like(data01)/float(len(data06));
             
             if (plotAsLines == True):
