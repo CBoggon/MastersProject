@@ -338,21 +338,22 @@ class analyseTrajectories:
         #Determine if trajectory is for swimmers, diffusers or adherers
         k_exponent = A.separateDiffusersAndSwimmers(A, meanSquaredDispArray, tauArray);
         
-        if (k_exponent < self.minSwimmingExponent):
-            #Non Swimmer so no point continuing to calculate velocity. Return error.
-            return -11, displacementArray, velocityArray, k_exponent
-        
-        #Calculate average velocity by fitting to mean squared displacement function. This method accounts for pixel bias.
-        AvVelocity = A.fitVelocities(A, meanSquaredDispArray, tauArray);
+
+#        if (k_exponent < self.minSwimmingExponent):
+#            #Non Swimmer so no point continuing to calculate velocity. Return error.
+#            return -11, displacementArray, velocityArray, k_exponent
+#        
+#        #Calculate average velocity by fitting to mean squared displacement function. This method accounts for pixel bias.
+#        AvVelocity = A.fitVelocities(A, meanSquaredDispArray, tauArray);
 
         #Calculate average velocity and distance travelled by particle -- OLD METHOD FOR CALCULATING VELOCITY
-        #AvDisplacement = np.mean(displacementArray);
-        #AvDisplacement_error = np.std(displacementArray)/np.sqrt(len(displacementArray));   #Standard error on mean
+        AvDisplacement = np.mean(displacementArray);
+        AvDisplacement_error = np.std(displacementArray)/np.sqrt(len(displacementArray));   #Standard error on mean
         
 
-        #AvVelocity = np.mean(velocityArray);
-        #AvVelocity = AvDisplacement/(self.NumFramesToAverageOver*self.timePerFrame);
-        #AvVelocity_error = np.std(velocityArray)/np.sqrt(len(velocityArray));   #Standard deviation (NB: Not standard error on mean)
+        AvVelocity = np.mean(velocityArray);
+        ##AvVelocity = AvDisplacement/(self.NumFramesToAverageOver*self.timePerFrame);
+        AvVelocity_error = np.std(velocityArray)/np.sqrt(len(velocityArray));   #Standard error: standard deviation/sqrt(N)
 
         return AvVelocity, displacementArray, velocityArray, k_exponent
 
@@ -399,14 +400,17 @@ class analyseTrajectories:
         Calculate velocity by fitting to function MSD = 4Dt + v**2*t**2 + s**2. This method accounts for pixel bias.
         '''
 
-        init_vals = [1.0, 1.1, 0.5];     # for [amp, cen, wid]
+        init_vals = [1.0, 1.1, 1.0];     # for [amp, cen, wid]
         try:
-            #best_vals, covar = curve_fit(A.fitMSDEquation, tauArray[1:4], meanSquaredDispArray[1:4], p0=init_vals, bounds=((0, 0, -2.), (3., 3., 2.)));
-            best_vals, covar = curve_fit(A.fitMSDEquation, tauArray[1:4], meanSquaredDispArray[1:4], p0=init_vals);
+            best_vals, covar = curve_fit(A.fitMSDEquation, tauArray[1:4], meanSquaredDispArray[1:4], p0=init_vals, bounds=((0., 0., 0.), (3., 3., 3.)));
+            #best_vals, covar = curve_fit(A.fitMSDEquation, tauArray[1:4], meanSquaredDispArray[1:4], p0=init_vals);
             #print 'best_vals = '+str(best_vals);
             s = best_vals[2];
             v = np.absolute(best_vals[1])/self.timePerFrame;	#take magnitude as negative value does not matter in equation as squared
             D = best_vals[0];
+            if (v <= 0.01):
+		v = -10;	#Not fitted velocity so get rid of data.
+
             #print 'velocity fit values; s = %f, v = %f, D = %f' % tuple(best_vals)
         
         except RuntimeError:
@@ -450,6 +454,7 @@ class analyseTrajectories:
         
         t = tauArray*self.timePerFrame;
         #t = self.timePerFrame*3*self.NumFramesToAverageOver*np.arange(len(cumulativeMeanSquaredDisplacementArray));
+        #init_vals = [20., 1.5, 0.5];     # for [amp, cen, wid]
         init_vals = [20., 1.5];     # for [amp, cen, wid]
 
         #print tauArray
@@ -461,10 +466,13 @@ class analyseTrajectories:
         
         else:
             try:
+                #best_vals, covar = curve_fit(A.fitDiffusersAndSwimmers, t, meanSquaredDisplacementArray, p0=init_vals, bounds=((-np.inf, 0., -3.), (np.inf, 3., 3.)));
                 best_vals, covar = curve_fit(A.fitDiffusersAndSwimmers, t, meanSquaredDisplacementArray, p0=init_vals);
                 #print 'best_vals = '+str(best_vals);
                 k = best_vals[1];
                 C = best_vals[0];
+                #b = best_vals[2];
+                #print 'k-exponent fit values; C = %f, k = %f' % tuple(best_vals)
             
             except RuntimeError:
                 print("Optimal parameters not found: Number of calls to function has reached maxfev = 600.\n");
@@ -586,6 +594,7 @@ class analyseTrajectories:
     ### Calculate historgram to separate diffusers from bacteria stuck to surface
     def fitDiffusersAndSwimmers(self, x, C, k):
         "Equation to fit data: y = Cx^k"
+        #return (C*(x**k) + b)
         return (C*(x**k))
 
     
@@ -616,8 +625,8 @@ class analyseTrajectories:
 	if (binNum == None):
             #binNum = np.linspace(0, 2, 30);
             IQR = 0.75*np.max(data0_0) - 0.25*np.max(data0_0)
-            #bins = IQR/np.power(len(data00), 1./3);       #Calculate bin size using Freedman - Diaconis rule. This is a bit big so divided by 2.
-            bins = 0.5*IQR/np.power(len(data0_0), 1./3); #TEMP BINS
+            bins = IQR/np.power(len(data0_0), 1./3);       #Calculate bin size using Freedman - Diaconis rule. This is a bit big so divided by 2.
+            #bins = 0.5*IQR/np.power(len(data0_0), 1./3); #TEMP BINS
             binNum = np.linspace(0, 2, int(2./bins));
 
         #plot first subfigure

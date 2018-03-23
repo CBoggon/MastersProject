@@ -16,7 +16,7 @@ plt.close('all');
 ### Declare Variables
 NumFramesInVideo = 2000;
 initialFrameNum = 1.0;
-NumFramesToAverageOver = 1; #Average over a number of frames to reduce the random effects of diffusion on the calculate swimming velocity
+NumFramesToAverageOver = 3; #Average over a number of frames to reduce the random effects of diffusion on the calculate swimming velocity
 minTrajLen = 3*NumFramesToAverageOver+1;  
 fps = 50;
 timePerFrame = 1./fps;
@@ -33,7 +33,7 @@ minTauVals = 1;
 BacteriaCounterFrame = 200.;
 
 lengthOfVideo = timePerFrame*NumFramesInVideo;  #Total length of video in seconds
-maxVids = 2;   #Define max number of videos to analyse if the last videos have very little to analyse in them.
+maxVids = 16;   #Define max number of videos to analyse if the last videos have very little to analyse in them.
 
 
 # Choose whether to use manually added times or calculated times in script.
@@ -269,9 +269,9 @@ if (manualTimes == 1):
     timePos02 = time2[0:maxVids];
 
 #Plot overlapping, normalised histograms for each position at different times to see if there is a difference in shape.
-#timesToPlotHist = [0, 3, 6, 9];
+timesToPlotHist = [0, 3, 6, 9];
 #timesToPlotHist = [2, 4, 6, 7, 8];
-timesToPlotHist = [0, 1, 0, 1, 0];
+#timesToPlotHist = [0, 1, 0, 1, 0];
 #timesToPlotHist = [0, 0, 0, 0, 0];
 
 labelPos00_0 = str(datetime.timedelta(seconds=round(timePos00[timesToPlotHist[0]],0)))[2:10];
@@ -310,7 +310,7 @@ A.plotHistogramsInSameFig(fullTraj_velocityPos00[0], labelPos00_0, data0_1=fullT
 # Plot lysis line
 lysisLine_x = np.array([0.5 for i in range(0,9)]);
 lysisLine_y = np.array([5.0*i for i in range(0,9)]);
-N_lysisLine_y = np.array([45.0*i for i in range(0,9)]);
+N_lysisLine_y = np.array([200.0*i for i in range(0,9)]);
 
 #Plot skewness of histograms vs time
 skewPos00, skewPos01, skewPos02 = A.calculateSkewness(fullTraj_velocityPos00, fullTraj_velocityPos01, fullTraj_velocityPos02);
