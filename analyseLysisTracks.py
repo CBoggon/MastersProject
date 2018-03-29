@@ -159,9 +159,9 @@ class analyseTrajectories:
         stopTime_frame, timeStopped, velocityArray, runningVelocityAverage, runningVelocityAverage_error, traj_frames, directionCorrelationArray = A.findLysisEvent(A, BIGLIST_traj);
         
         #Convert data to units of micrometers and seconds.
-        #velocityArray = self.pixelsToMicrons*velocityArray;
-        #runningVelocityAverage = self.pixelsToMicrons*runningVelocityAverage;
-        #runningVelocityAverage_error = self.pixelsToMicrons*(runningVelocityAverage_error/runningVelocityAverage);
+        velocityArray = self.pixelsToMicrons*velocityArray;
+        runningVelocityAverage = self.pixelsToMicrons*runningVelocityAverage;
+        runningVelocityAverage_error = self.pixelsToMicrons*(runningVelocityAverage_error/runningVelocityAverage);
         #traj_frames = self.timePerFrame*traj_frames;
 
         #Define array to go on x axis of graph
@@ -178,11 +178,17 @@ class analyseTrajectories:
             runningVelocityAverage_frames[i] = traj_frames[counter];
             counter = counter + self.RunningAvTrajLen*self.NumFramesToAverageOver;
 
+        
+        #Covert frames to seconds for plot:
+        velocityArray_seconds = self.timePerFrame*(velocityArray_frames - velocityArray_frames[0]);
+        runningVelocityAverage_seconds = self.timePerFrame*(runningVelocityAverage_frames - runningVelocityAverage_frames[0]);
 
         if (plotRodLength == 0):
 
             #A.plotDataSetsWithErrorBars(traj_frames[1:len(traj_frames)], velocityArray, 'Velocity', np.array(None), traj_frames[2:len(traj_frames)], runningVelocityAverage, y1_error=runningVelocityAverage_error, label1='Running Average', title='Lysis Event', xlbl='frame ('+str(self.timePerFrame)+' seconds/frame)', ylbl='Velocity (micrometers/second)');
-            A.plotDataSetsWithErrorBars(velocityArray_frames, velocityArray, 'Velocity', np.array(None), runningVelocityAverage_frames, runningVelocityAverage, y1_error=runningVelocityAverage_error, label1='Running Average', title='Lysis Event', xlbl='frame ('+str(self.timePerFrame)+' seconds/frame)', ylbl='Velocity (frames/second)');
+            #A.plotDataSetsWithErrorBars(velocityArray_frames, velocityArray, 'Velocity', np.array(None), runningVelocityAverage_frames, runningVelocityAverage, y1_error=runningVelocityAverage_error, label1='Running Average', title='Lysis Event', xlbl='frame ('+str(self.timePerFrame)+' seconds/frame)', ylbl='Velocity (frames/second)');
+            
+            A.plotDataSetsWithErrorBars(velocityArray_seconds, velocityArray, 'Velocity', np.array(None), runningVelocityAverage_seconds, runningVelocityAverage, y1_error=runningVelocityAverage_error, label1='Running Average', xlbl='time (seconds)', ylbl='Velocity (micrometers/second)');
 
             return stopTime_frame, timeStopped, velocityArray, runningVelocityAverage, runningVelocityAverage_error, traj_frames, directionCorrelationArray
 
@@ -194,7 +200,9 @@ class analyseTrajectories:
             rodLengthFit = M*traj_frames[0:len(traj_frames)] + C;
 
             #Plot velocity array and running average velocity with error
-            A.plotDataSetsWithErrorBars(velocityArray_frames, velocityArray, 'Velocity', np.array(None), runningVelocityAverage_frames, runningVelocityAverage, y1_error=runningVelocityAverage_error, label1='Running Average', title='Lysis Event', xlbl='frame ('+str(self.timePerFrame)+' seconds/frame)', ylbl='Velocity (micrometers/second)');
+            #A.plotDataSetsWithErrorBars(velocityArray_frames, velocityArray, 'Velocity', np.array(None), runningVelocityAverage_frames, runningVelocityAverage, y1_error=runningVelocityAverage_error, label1='Running Average', title='Lysis Event', xlbl='frame ('+str(self.timePerFrame)+' seconds/frame)', ylbl='Velocity (micrometers/second)');
+            
+            A.plotDataSetsWithErrorBars(velocityArray_seconds, velocityArray, 'Velocity', np.array(None), runningVelocityAverage_seconds, runningVelocityAverage, y1_error=runningVelocityAverage_error, label1='Running Average', title='Lysis Event', xlbl='time (seconds)', ylbl='Velocity (micrometers/second)');
             
             #Plot rod length
             #A.plotDataSetsWithErrorBars(traj_frames[0:len(traj_frames)], rodLengthArray, 'Length', np.array(None), traj_frames[0:len(traj_frames)], rodLengthFit, label1='Fit', title='Bacteria Lengths through trajectory', xlbl='frame ('+str(self.timePerFrame)+' seconds/frame)', ylbl='Rod Length (micrometers)');
@@ -280,7 +288,7 @@ class analyseTrajectories:
     def plotDataSetsWithErrorBars(self, x0, y0, label0, y0_error=np.array(None), x1=np.array(None), y1=np.array(None), y1_error=np.array(None), label1=None, x2=np.array(None), y2=np.array(None), y2_error=np.array(None), label2=None, x3=np.array(None), y3=np.array(None), y3_error=np.array(None), label3=None, x4=np.array(None), y4=np.array(None), y4_error=np.array(None), label4=None, title=None, xlbl=None, ylbl=None):
         
         plt.figure(figsize=(14, 6))
-        plt.rc('font', family='serif', size=12);
+        plt.rc('font', family='serif', size=15);
 
         print 'y0_error:'
         print y0_error

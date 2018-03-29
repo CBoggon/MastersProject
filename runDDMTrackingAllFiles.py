@@ -16,8 +16,8 @@ plt.close('all');
 ### Declare Variables
 NumFramesInVideo = 2000;
 initialFrameNum = 1.0;
-NumFramesToAverageOver = 1; #Average over a number of frames to reduce the random effects of diffusion on the calculate swimming velocity
-minTrajLen = 3*NumFramesToAverageOver+1;  
+NumFramesToAverageOver = 3; #Average over a number of frames to reduce the random effects of diffusion on the calculate swimming velocity
+minTrajLen = 30;    #3*NumFramesToAverageOver+1;  
 fps = 50;
 timePerFrame = 1./fps;
 pixelsToMicrons = 0.702;    # For x20 Mag
@@ -33,7 +33,7 @@ minTauVals = 1;
 BacteriaCounterFrame = 200.;
 
 lengthOfVideo = timePerFrame*NumFramesInVideo;  #Total length of video in seconds
-maxVids = 2;   #Define max number of videos to analyse if the last videos have very little to analyse in them.
+maxVids = 16;   #Define max number of videos to analyse if the last videos have very little to analyse in them.
 
 
 # Choose whether to use manually added times or calculated times in script.
@@ -267,9 +267,9 @@ if (manualTimes == 1):
     timePos02 = time2[0:maxVids];
 
 #Plot overlapping, normalised histograms for each position at different times to see if there is a difference in shape.
-#timesToPlotHist = [0, 3, 6, 9];
+timesToPlotHist = [0, 3, 6, 9];
 #timesToPlotHist = [2, 4, 6, 7, 8];
-timesToPlotHist = [0, 1, 0, 1, 0];
+#timesToPlotHist = [0, 1, 0, 1, 0];
 #timesToPlotHist = [0, 0, 0, 0, 0];
 
 labelPos00_0 = str(datetime.timedelta(seconds=round(timePos00[timesToPlotHist[0]],0)))[2:10];
@@ -312,20 +312,23 @@ N_lysisLine_y = np.array([45.0*i for i in range(0,9)]);
 
 #Plot skewness of histograms vs time
 skewPos00, skewPos01, skewPos02 = A.calculateSkewness(fullTraj_velocityPos00, fullTraj_velocityPos01, fullTraj_velocityPos02);
-A.plotDataSetsWithErrorBars(timePos00, skewPos00, 'Control', x1=timePos01, y1=skewPos01, label1='Phage 1', x2=timePos02, y2=skewPos02, label2='Phage 2', title='Skewness of velocity distribution over time', xlbl='Time (Minutes)', ylbl='Pearsons Moment Coefficient of Skewness');
+A.plotDataSetsWithErrorBars(timePos00, skewPos00, 'Control', x1=timePos01, y1=skewPos01, label1='Phage 1', x2=timePos02, y2=skewPos02, label2='Phage 2', xlbl='Time (Minutes)', ylbl='Pearsons Moment Coefficient of Skewness');
 outputFile = outputSaveFileDir+'SkewVsTime';
 plt.savefig(outputFile);
+#title='Skewness of velocity distribution over time'
 
 
 #Plot number of motile bacteria vs time
-A.plotDataSetsWithErrorBars(timePos00, NArrayPos00, 'Control', y0_error=NArrayErrorPos00, x1=timePos01, y1=NArrayPos01, y1_error=NArrayErrorPos01, label1='Phage 1', x2=timePos02, y2=NArrayPos02, y2_error=NArrayErrorPos02, label2='Phage 2', x3=lysisLine_x, y3=N_lysisLine_y, label3='Phage Infection', title='Tracked Number of Motile Bacteria', xlbl='Time (Minutes)', ylbl='Number of Tracked Bacteria');
+A.plotDataSetsWithErrorBars(timePos00, NArrayPos00, 'Control', y0_error=NArrayErrorPos00, x1=timePos01, y1=NArrayPos01, y1_error=NArrayErrorPos01, label1='Phage 1', x2=timePos02, y2=NArrayPos02, y2_error=NArrayErrorPos02, label2='Phage 2', x3=lysisLine_x, y3=N_lysisLine_y, label3='Phage Infection', xlbl='Time (Minutes)', ylbl='Number of Tracked Bacteria');
 outputFile = outputSaveFileDir+'NVsTime';
 plt.savefig(outputFile);
+#title='Tracked Number of Motile Bacteria'
 
 #Plot average velocity vs time with all positions (control and both pahge videos) on one plot.
-A.plotDataSetsWithErrorBars(timePos00, velocityPos00, 'Control', y0_error=velocityErrorPos00, x1=timePos01, y1=velocityPos01, y1_error=velocityErrorPos01, label1='Phage 1', x2=timePos02, y2=velocityPos02, y2_error=velocityErrorPos02, label2='Phage 2', x3=lysisLine_x, y3=lysisLine_y, label3='Phage Infection', title='Tracked Average Velocities', xlbl='Time (Minutes)', ylbl='Average Velocity (micrometers/second)', plotLegend=False);
-
+A.plotDataSetsWithErrorBars(timePos00, velocityPos00, 'Control', y0_error=velocityErrorPos00, x1=timePos01, y1=velocityPos01, y1_error=velocityErrorPos01, label1='Phage 1', x2=timePos02, y2=velocityPos02, y2_error=velocityErrorPos02, label2='Phage 2', x3=lysisLine_x, y3=lysisLine_y, label3='Phage Infection', xlbl='Time (Minutes)', ylbl='Average Velocity (micrometers/second)', plotLegend=False);
+plt.legend(loc='lower center')
 outputFile = outputSaveFileDir+'AvVelocityVsTime';
 plt.savefig(outputFile);
+#title='Tracked Average Velocities'
 plt.show()
 

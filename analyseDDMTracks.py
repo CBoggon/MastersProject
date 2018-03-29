@@ -343,16 +343,16 @@ class analyseTrajectories:
             return -11, displacementArray, velocityArray, k_exponent
         
         #Calculate average velocity by fitting to mean squared displacement function. This method accounts for pixel bias.
-        AvVelocity = A.fitVelocities(A, meanSquaredDispArray, tauArray);
+        #AvVelocity = A.fitVelocities(A, meanSquaredDispArray, tauArray);
 
         #Calculate average velocity and distance travelled by particle -- OLD METHOD FOR CALCULATING VELOCITY
-        #AvDisplacement = np.mean(displacementArray);
-        #AvDisplacement_error = np.std(displacementArray)/np.sqrt(len(displacementArray));   #Standard error on mean
+        AvDisplacement = np.mean(displacementArray);
+        AvDisplacement_error = np.std(displacementArray)/np.sqrt(len(displacementArray));   #Standard error on mean
         
 
-        #AvVelocity = np.mean(velocityArray);
-        #AvVelocity = AvDisplacement/(self.NumFramesToAverageOver*self.timePerFrame);
-        #AvVelocity_error = np.std(velocityArray)/np.sqrt(len(velocityArray));   #Standard deviation (NB: Not standard error on mean)
+        AvVelocity = np.mean(velocityArray);
+        AvVelocity = AvDisplacement/(self.NumFramesToAverageOver*self.timePerFrame);
+        AvVelocity_error = np.std(velocityArray)/np.sqrt(len(velocityArray));   #Standard deviation (NB: Not standard error on mean)
 
         return AvVelocity, displacementArray, velocityArray, k_exponent
 
@@ -606,7 +606,7 @@ class analyseTrajectories:
     def plotHistogramsInSameFig(self, data0_0, label0_0=np.array(None), data0_1=np.array(None), label0_1=np.array(None), data0_2=np.array(None), label0_2=np.array(None), data0_3=np.array(None), label0_3=np.array(None), data1_0=np.array(None), label1_0=np.array(None), data1_1=np.array(None), label1_1=np.array(None), data1_2=np.array(None), label1_2=np.array(None), data1_3=np.array(None), label1_3=np.array(None), data2_0=np.array(None), label2_0=np.array(None), data2_1=np.array(None), label2_1=np.array(None), data2_2=np.array(None), label2_2=np.array(None), data2_3=np.array(None), label2_3=np.array(None), xlbl='bins', ylbl='Normalised Frequency', xlim=np.array(None), plotAsLines=True, saveFilename=None):
         
         plt.figure(figsize=(14, 6))
-        plt.rc('font', family='serif', size=12);
+        plt.rc('font', family='serif', size=15);
         
         data0_0 = data0_0/np.mean(data0_0);
         weights = np.ones_like(data0_0)/float(len(data0_0));
@@ -786,7 +786,7 @@ class analyseTrajectories:
         '''
 
         plt.figure(figsize=(10, 6))
-        plt.rc('font', family='serif', size=12);
+        plt.rc('font', family='serif', size=15);
         #data00 = data00/np.mean(data00);
         data00 = data00/len(data00);
          
@@ -974,7 +974,7 @@ class analyseTrajectories:
         if(xlbl != None): plt.xlabel(xlbl);
         if(ylbl != None): plt.ylabel(ylbl)
         plt.legend(loc='upper right');
-        plt.rc('font', family='serif', size=12);
+        plt.rc('font', family='serif', size=15);
         #plt.savefig(outputPlotName)
         #plt.show()
         
@@ -985,7 +985,7 @@ class analyseTrajectories:
     def plotDataSetsWithErrorBars(self, x0, y0, label0, y0_error=np.array(None), x1=np.array(None), y1=np.array(None), y1_error=np.array(None), label1=None, x2=np.array(None), y2=np.array(None), y2_error=np.array(None), label2=None, x3=np.array(None), y3=np.array(None), y3_error=np.array(None), label3=None, x4=np.array(None), y4=np.array(None), y4_error=np.array(None), label4=None, title=None, xlbl=None, ylbl=None, plotLegend=True):
         
         plt.figure(figsize=(10, 6))
-       
+
         if (y0_error.all() == None):
             plt.plot(x0, y0, 'x-', label=label0)
         else:
@@ -1019,7 +1019,7 @@ class analyseTrajectories:
         if(xlbl != None): plt.xlabel(xlbl);
         if(ylbl != None): plt.ylabel(ylbl);
         if(plotLegend == True): plt.legend(loc='upper left');
-        plt.rc('font', family='serif', size=12);
+        plt.rc('font', family='serif', size=15);
 
 #        if(y1.all() != None): plt.legend(loc='upper right');
         #plt.legend(loc='upper right');

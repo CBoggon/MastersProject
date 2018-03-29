@@ -19,6 +19,7 @@ def plotHistogram(data, xlbl='bins', ylbl='Frequency', title=None):
 def plotDataSetsWithUpperAndLowerErrorBars(x0, y0, label0, y0_error_lower=np.array(None), y0_error_upper=np.array(None), x1=np.array(None), y1=np.array(None), y1_error_lower=np.array(None), y1_error_upper=np.array(None), label1=None, x2=np.array(None), y2=np.array(None), y2_error_lower=np.array(None), y2_error_upper=np.array(None), label2=None, x3=np.array(None), y3=np.array(None), y3_error_lower=np.array(None), y3_error_upper=np.array(None), label3=None, x4=np.array(None), y4=np.array(None), y4_error_lower=np.array(None), y4_error_upper=np.array(None), label4=None, title=None, xlbl=None, ylbl=None, saveFileName=None, plotLegend=True):
 
     plt.figure(figsize=(10, 6))
+    plt.rc('font', family='serif', size=15);
 
     if (y0_error_lower.all() == None):
         plt.plot(x0, y0, 'x', label=label0)
@@ -53,9 +54,11 @@ def plotDataSetsWithUpperAndLowerErrorBars(x0, y0, label0, y0_error_lower=np.arr
     if(xlbl != None): plt.xlabel(xlbl);
     if(ylbl != None): plt.ylabel(ylbl);
     if(plotLegend == True): plt.legend(loc='upper left');
+    #if (xlim.all() != None):
+    plt.ylim(0, 26);
     if(saveFileName != None): plt.savefig(saveFileName);
     plt.xticks(np.linspace(0,1,0.5), np.array(['0' for i in range(0,1)]));
-    plt.rc('font', family='serif', size=13);
+    plt.rc('font', family='serif', size=15);
     #plt.show()
 
     return
@@ -63,6 +66,7 @@ def plotDataSetsWithUpperAndLowerErrorBars(x0, y0, label0, y0_error_lower=np.arr
 def plotDataSetsWithErrorBars(x0, y0, label0, y0_error=np.array(None), x1=np.array(None), y1=np.array(None), y1_error=np.array(None), label1=None, x2=np.array(None), y2=np.array(None), y2_error=np.array(None), label2=None, x3=np.array(None), y3=np.array(None), y3_error=np.array(None), label3=None, x4=np.array(None), y4=np.array(None), y4_error=np.array(None), label4=None, title=None, xlbl=None, ylbl=None, plotLegend=True):
 
     plt.figure(figsize=(10, 6))
+    plt.rc('font', family='serif', size=15);
 
     if (y0_error.all() == None):
         plt.plot(x0, y0, 'o', label=label0)

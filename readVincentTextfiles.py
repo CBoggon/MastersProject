@@ -28,7 +28,7 @@ def produceISFExamples(A):
     z = 2;
     z_factorial = 2;
 
-    tau = np.arange(0, 20, 0.01);
+    tau = np.arange(0, 40, 0.01);
     
     f_diff = np.exp(-D*tau*q**2);
     f_swim = np.sin(q*v_bar*tau)/(q*v_bar*tau);
@@ -51,6 +51,11 @@ def produceISFExamples(A):
     f_swimAv = schulzSwimmer(z, z_factorial, v_bar, tau, q);
     f_mix = f_diff*((1-beta) + beta*f_swimAv);
 
+    g_diff = 1 - f_diff;
+    g_swim = 1 - f_swim;
+    g_swimAv = 1 - f_swimAv;
+    g_mix = 1 - f_mix;
+
     #A.plotDataSetsWithErrorBars(tau, f_diff, 'Diffusers', x1=tau, y1=f_swim, label1='Swimmers', x2=tau, y2=f_mix, label2=str(int(100*beta))+':'+str(int(100*(1-beta)))+' swimmers:diffusers', xlbl='Delay time (seconds)', ylbl='f(q, tau)', plotLegend=True);
 
     plt.figure(figsize=(10, 6))
@@ -61,9 +66,21 @@ def produceISFExamples(A):
     plt.xlabel('Delay time (seconds)')
     plt.ylabel('f(q, tau)')
     plt.xscale('log')
+    plt.rc('font', family='serif', size=15);
     plt.legend(loc='upper right')
-    plt.rc('font', family='serif', size=13);
 
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(tau, g_diff, '-', label='Diffusers')
+   #plt.plot(tau, g_swim, '-', label='Single Swimmer')
+    plt.plot(tau, g_swimAv, '-', label='Average Swimmers')
+    plt.plot(tau, g_mix, '-', label=str(int(100*beta))+':'+str(int(100*(1-beta)))+' swimmers:diffusers')
+    plt.xlabel('Delay time (seconds)')
+    plt.ylabel('g(q, tau)')
+    plt.xscale('log')
+    plt.rc('font', family='serif', size=15);
+    plt.legend(loc='lower right')
+    
     return
 
 def readGVsQFile(filename, skipLines=1):
@@ -184,7 +201,7 @@ Filename_gVsq = outputSaveFileDir+'gqtau_data_q0p716.txt';
 
 
 ### Plot example DDM plots of ISF
-#produceISFExamples(A);
+produceISFExamples(A);
 
 
 ## Read data 

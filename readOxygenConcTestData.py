@@ -51,6 +51,7 @@ def calcAvIntensity(pixelArray, intensityArray):
 def plotDataSetsWithErrorBars(x0, y0, label0, y0_error=np.array(None), x1=np.array(None), y1=np.array(None), y1_error=np.array(None), label1=None, x2=np.array(None), y2=np.array(None), y2_error=np.array(None), label2=None, x3=np.array(None), y3=np.array(None), y3_error=np.array(None), label3=None, x4=np.array(None), y4=np.array(None), y4_error=np.array(None), label4=None, title=None, xlbl=None, ylbl=None, plotLegend=True, saveFileName=None):
 
     plt.figure(figsize=(10, 6))
+    plt.rc('font', family='serif', size=15);
 
     if (y0_error.all() == None):
         plt.plot(x0, y0, 'o-', label=label0)
@@ -168,10 +169,29 @@ AvIntensity_Glass, AvIntensity_Glass_error = calcAvIntensity(GlassPixelsArray, G
 AvIntensity_PDMS, AvIntensity_PDMS_error = calcAvIntensity(PDMSPixelsArray, PDMSIntensityArray);
 
 
+#Remove last data point from Glass Data:
+AvIntensity_Glass = AvIntensity_Glass[0:len(AvIntensity_Glass)-1];
+AvIntensity_Glass_error = AvIntensity_Glass_error[0:len(AvIntensity_Glass_error)-1];
+time_Glass = time_Glass[0:len(time_Glass)-1];
+
+
+# Convert tau intensity to oxygen concentration using experimentally determined equation from Swarz-Linek et al. (2016): [02]=568.1 [mu m] (604[ns]/t - 1)
+AvOConc_Control = 568.1*(604./AvIntensity_Control - 1)
+AvOConc_Glass = 568.1*(604./AvIntensity_Glass - 1)
+AvOConc_PDMS = 568.1*(604./AvIntensity_PDMS - 1)
+
+AvOConc_Control_error = AvOConc_Control*(AvIntensity_Control_error/AvIntensity_Control);
+AvOConc_Glass_error = AvOConc_Glass*(AvIntensity_Glass_error/AvIntensity_Glass);
+AvOConc_PDMS_error = AvOConc_PDMS*(AvIntensity_PDMS_error/AvIntensity_PDMS);
+
 #plotDataSetsWithErrorBars(time_Glass, AvIntensity_Glass, None, AvIntensity_Glass_error);
 
-plotDataSetsWithErrorBars(time_Glass, AvIntensity_Glass, 'Glass', AvIntensity_Glass_error, x1=time_Control, y1=AvIntensity_Control, y1_error=AvIntensity_Control_error, label1='PDMS-Control', x2=time_PDMS, y2=AvIntensity_PDMS, y2_error=AvIntensity_PDMS_error, label2='PDMS', xlbl='Time (minutes)', ylbl='Intensity (arbitrary units)', plotLegend=False);
-plt.legend(loc='upper right')
+#plotDataSetsWithErrorBars(time_Glass, AvIntensity_Glass, 'Glass', AvIntensity_Glass_error, x1=time_Control, y1=AvIntensity_Control, y1_error=AvIntensity_Control_error, label1='PDMS-Control', x2=time_PDMS, y2=AvIntensity_PDMS, y2_error=AvIntensity_PDMS_error, label2='PDMS', xlbl='Time (minutes)', ylbl='Average Decay Constant (arbitrary units)', plotLegend=False);
+
+#plotDataSetsWithErrorBars(time_Glass, AvOConc_Glass, 'Glass', AvOConc_Glass_error, x1=time_Control, y1=AvOConc_Control, y1_error=AvOConc_Control_error, label1='PDMS-Control', x2=time_PDMS, y2=AvOConc_PDMS, y2_error=AvOConc_PDMS_error, label2='PDMS', xlbl='Time (minutes)', ylbl='Oxygen Concentration (Osmoles)', plotLegend=False);
+
+plotDataSetsWithErrorBars(time_Glass, AvOConc_Glass, 'Glass', AvOConc_Glass_error, x1=time_PDMS, y1=AvOConc_PDMS, y1_error=AvOConc_PDMS_error, label1='PDMS', xlbl='Time (minutes)', ylbl='Oxygen Concentration (mOsm)', plotLegend=False);
+plt.legend(loc='center right')
 
 #
 ## Plot DICF vs tau:
