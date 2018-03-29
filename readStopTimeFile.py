@@ -63,7 +63,7 @@ def plotDataSetsWithUpperAndLowerErrorBars(x0, y0, label0, y0_error_lower=np.arr
 
     return
 
-def plotDataSetsWithErrorBars(x0, y0, label0, y0_error=np.array(None), x1=np.array(None), y1=np.array(None), y1_error=np.array(None), label1=None, x2=np.array(None), y2=np.array(None), y2_error=np.array(None), label2=None, x3=np.array(None), y3=np.array(None), y3_error=np.array(None), label3=None, x4=np.array(None), y4=np.array(None), y4_error=np.array(None), label4=None, title=None, xlbl=None, ylbl=None, plotLegend=True):
+def plotDataSetsWithErrorBars(x0, y0, label0, y0_error=np.array(None), x1=np.array(None), y1=np.array(None), y1_error=np.array(None), label1=None, x2=np.array(None), y2=np.array(None), y2_error=np.array(None), label2=None, x3=np.array(None), y3=np.array(None), y3_error=np.array(None), label3=None, x4=np.array(None), y4=np.array(None), y4_error=np.array(None), label4=None, title=None, xlbl=None, ylbl=None, plotLegend=True, saveFileName=None):
 
     plt.figure(figsize=(10, 6))
     plt.rc('font', family='serif', size=15);
@@ -130,6 +130,8 @@ def readFile(filename):
             timeStoppedArray = [];
             stopFramearray_Lerror = [];
             stopFramearray_Uerror = [];
+            AvVelocityArray = [];
+            AvVelocityErrorArray = [];
             veloctyFileArray = [];
             for i in range(0,len(content)):
                 data = content[i].split();
@@ -138,13 +140,17 @@ def readFile(filename):
                 timeStoppedArray.append(float(data[2]));
                 stopFramearray_Lerror.append(float(data[3]));
                 stopFramearray_Uerror.append(float(data[4]));
-                veloctyFileArray.append(data[5]);
+                AvVelocityArray.append(float(data[5]));
+                AvVelocityErrorArray.append(float(data[6]));
+                veloctyFileArray.append(data[7]);
 
             stopFramearray = np.asarray(stopFramearray);
             timeStoppedArray = np.asarray(timeStoppedArray);
             stopFramearray_Lerror = np.asarray(stopFramearray_Lerror);
             stopFramearray_Uerror = np.asarray(stopFramearray_Uerror);
-            
+            AvVelocityArray = np.asarray(AvVelocityArray);
+            AvVelocityErrorArray = np.asarray(AvVelocityErrorArray);
+
             # Calc position of upper and lower error in time
             timeStoppedArray_Uerror = (1./25)*(stopFramearray - stopFramearray_Lerror);
             timeStoppedArray_Lerror = (1./25)*(stopFramearray_Uerror - stopFramearray);
@@ -153,7 +159,7 @@ def readFile(filename):
             #timeStoppedArray_Uerror = timeStoppedArray_Uerror - timeStoppedArray;
             #timeStoppedArray_Lerror = timeStoppedArray - timeStoppedArray_Lerror;
             
-            return IDArray, stopFramearray, timeStoppedArray, timeStoppedArray_Lerror, timeStoppedArray_Uerror, veloctyFileArray, stopFramearray_Lerror, stopFramearray_Uerror
+            return IDArray, stopFramearray, timeStoppedArray, timeStoppedArray_Lerror, timeStoppedArray_Uerror, veloctyFileArray, stopFramearray_Lerror, stopFramearray_Uerror, AvVelocityArray, AvVelocityErrorArray
 
 
 fps = 25;
@@ -161,7 +167,7 @@ timePerFrame = 1./fps;
 
 fileDir = '../../../../../../../../Volumes/CBOGGONUSB/Data/20180227-Surface/lysisTrackingOutput/lysisEvents.dat';
 
-IDArray, stopFramearray, timeStoppedArray, timeStoppedArray_Lerror, timeStoppedArray_Uerror, veloctyFileArray, stopFramearray_Lerror, stopFramearray_Uerror = readFile(fileDir);
+IDArray, stopFramearray, timeStoppedArray, timeStoppedArray_Lerror, timeStoppedArray_Uerror, veloctyFileArray, stopFramearray_Lerror, stopFramearray_Uerror, AvVelocityArray, AvVelocityErrorArray = readFile(fileDir);
 
 # Plot timeStopped histogram
 timeStoppedArray = timePerFrame*timeStoppedArray;
@@ -174,4 +180,6 @@ plotDataSetsWithUpperAndLowerErrorBars(x_onGraph, timeStoppedArray, None, timeSt
 
 #title='Time Bacteria Stopped Before Lysis'
 
+#Plot Average velocity vs stopping time
+plotDataSetsWithErrorBars(timeStoppedArray, AvVelocityArray, None, AvVelocityErrorArray, xlbl='time Stopped (seconds)', ylbl='Velocity Before Stopping (micrometers/second)');
 plt.show()

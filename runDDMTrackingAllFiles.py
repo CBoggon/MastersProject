@@ -17,7 +17,11 @@ plt.close('all');
 NumFramesInVideo = 2000;
 initialFrameNum = 1.0;
 NumFramesToAverageOver = 3; #Average over a number of frames to reduce the random effects of diffusion on the calculate swimming velocity
+<<<<<<< HEAD
 minTrajLen = 30;    #3*NumFramesToAverageOver+1;  
+=======
+minTrajLen = 3*NumFramesToAverageOver+1;  
+>>>>>>> ae5d5525f7a6c675a0d21e3134b477be15dd0728
 fps = 50;
 timePerFrame = 1./fps;
 pixelsToMicrons = 0.702;    # For x20 Mag
@@ -28,7 +32,7 @@ minStopVelocityThreshold = 18;      #minimum drop in average velocity that defin
 stoppingVelocityThreshold = 0.2;
 D = 0.34;    #Diffusion constant micrometers/second
 diffusionThreshold = (1/(float(NumFramesToAverageOver)*timePerFrame))*np.sqrt(4*D*(1/pixelsToMicrons)**2*(float(NumFramesToAverageOver)*timePerFrame));     #Above this threshold, bacteria considered to still be swimming.
-minSwimmingExponent = 1.3;
+minSwimmingExponent = 1.5;
 minTauVals = 1;
 BacteriaCounterFrame = 200.;
 
@@ -64,12 +68,13 @@ plotCurveFittedData = 0;
 
 #fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-135326-AsImageSequences/';
 #fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-140137-AsImageSequences/';
-fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/';
+#fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/';
 
 ## UBUNTU ###
 #fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-135326-AsImageSequences/';
 #fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-140137-AsImageSequences/';
 #fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/';
+fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/';
 
 trackingFile = '/filterTracks2DtOutput/tracks_fixed.dat';
 
@@ -78,7 +83,8 @@ trackingFile = '/filterTracks2DtOutput/tracks_fixed.dat';
 ##### Create output file directory where tracking plots will be saved #####
 #outputSaveFileDir = fileDir+'trackingOutput/';
 #outputSaveFileDir = '../../Data/Results/DDM/';
-outputSaveFileDir = '../../../../../../../../Volumes/CBOGGONUSB/Data/DDMResults/';
+#outputSaveFileDir = '../../../../../../../../Volumes/CBOGGONUSB/Data/DDMResults/';
+outputSaveFileDir = '../../../../../../../media/cameron/CBOGGONUSB/Data/DDMResults/';
 
 try:
     os.stat(outputSaveFileDir)
@@ -308,7 +314,7 @@ A.plotHistogramsInSameFig(fullTraj_velocityPos00[0], labelPos00_0, data0_1=fullT
 # Plot lysis line
 lysisLine_x = np.array([0.5 for i in range(0,9)]);
 lysisLine_y = np.array([5.0*i for i in range(0,9)]);
-N_lysisLine_y = np.array([45.0*i for i in range(0,9)]);
+N_lysisLine_y = np.array([200.0*i for i in range(0,9)]);
 
 #Plot skewness of histograms vs time
 skewPos00, skewPos01, skewPos02 = A.calculateSkewness(fullTraj_velocityPos00, fullTraj_velocityPos01, fullTraj_velocityPos02);

@@ -208,7 +208,7 @@ class analyseTrajectories:
             #A.plotDataSetsWithErrorBars(traj_frames[0:len(traj_frames)], rodLengthArray, 'Length', np.array(None), traj_frames[0:len(traj_frames)], rodLengthFit, label1='Fit', title='Bacteria Lengths through trajectory', xlbl='frame ('+str(self.timePerFrame)+' seconds/frame)', ylbl='Rod Length (micrometers)');
             A.plotDataSetsWithErrorBars(velocityArray_frames, rodLengthArray, 'Length', np.array(None), runningVelocityAverage_frames, rodLengthFit, label1='Fit', title='Bacteria Lengths through trajectory', xlbl='frame ('+str(self.timePerFrame)+' seconds/frame)', ylbl='Rod Length (micrometers)');
                 
-            return
+            return stopTime_frame, timeStopped, velocityArray, runningVelocityAverage, runningVelocityAverage_error, traj_frames, directionCorrelationArray
 
 
     def fitStraightline(self, x, M, C): # this is your 'straight line' y=f(x)
@@ -250,7 +250,7 @@ class analyseTrajectories:
         self.stoppingVelocityThreshold = stoppingVelocityThreshold;     #fraction drop in average running velocity required to define stopping event.
         self.diffusionThreshold = diffusionThreshold;   #Stopped bacteria still diffuse. Above this threshold, bacteria considered still swimming.
 
-    def appendTrajectory(self, A, BIGLIST_traj, IDs, stopTime_frame, timeStopped, lysisEventDataFileDir, lysisEventDataFile, trajArrayName):
+    def appendTrajectory(self, A, BIGLIST_traj, IDs, stopTime_frame, timeStopped, lysisEventDataFileDir, lysisEventDataFile, trajArrayName, AvVelocityBeforeStopArray, AvVelocityBeforeStopArray_error):
         
         # Get the filename as string
         fn = str(input("Append trajectories to Lysis Events File as string ['Y', 'n'] : "))
@@ -259,8 +259,9 @@ class analyseTrajectories:
         if (fn == 'n'):
             return
 
+        # Function just outputs random errors of [+10, -10] on stop time. Need to alter this by hand later.
         elif (fn == 'Y'):
-            A.writeToFile(lysisEventDataFile, [IDs, stopTime_frame, timeStopped, trajArrayName]);
+            A.writeToFile(lysisEventDataFile, [IDs, stopTime_frame, timeStopped, stopTime_frame-10, stopTime_frame+10, AvVelocityBeforeStopArray, AvVelocityBeforeStopArray_error, trajArrayName]);
             np.save(lysisEventDataFileDir+trajArrayName, BIGLIST_traj);
             return
 
@@ -272,7 +273,7 @@ class analyseTrajectories:
     def writeToFile(self, filename, data):
             myFile = open(filename,'a')
             #myFile.write('i Pdf\n\n');
-            myFile.write('%s    %d      %f       %s\n' % tuple(data));
+            myFile.write('%s    %d      %f      %f      %f      %f       %f       %s\n' % tuple(data));
             myFile.close()
 
     # Plot distribution of velocities
@@ -364,8 +365,8 @@ diffusionThreshold = diffusionThreshold+1.;
 #fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid1-25fpsx20Mag2000Frames/DDMmovies180227-143931-AsImageSequences/Output-Pos03_Movie0007';
 #fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid1-25fpsx20Mag2000Frames/DDMmovies180227-143931-AsImageSequences/Output-Pos01_Movie0009';
 #fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid2-25fpsx20Mag2000Frames/DDMmovies180227-155825-AsImageSequences/Output-Pos01_Movie0009';
-#fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid2-25fpsx20Mag2000Frames/DDMmovies180227-155825-AsImageSequences/Output-Pos01_Movie0013';
-fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid2-25fpsx20Mag2000Frames/DDMmovies180227-155825-AsImageSequences/Output-Pos02_Movie0010';
+fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid2-25fpsx20Mag2000Frames/DDMmovies180227-155825-AsImageSequences/Output-Pos01_Movie0013';
+#fileDir = '../../../../../../../../Volumes/MyBook/MastersProject/Data/20180227/20180227SurfaceVid2-25fpsx20Mag2000Frames/DDMmovies180227-155825-AsImageSequences/Output-Pos02_Movie0010';
 
 ### UBUNTU ######
 #fileDir = '../../../../../../../media/cameron/MyBook/MastersProject/Data/20180213/20180213Surface2Samples-50fpsx20Mag/DDMmovies180213-152022-AsImageSequences/Output-Pos03_Movie0027';
@@ -434,6 +435,12 @@ if (len(sys.argv) > 3):
     BIGLIST_traj = A.addBIGLISTTrajectories(A, Temp_BIGLIST_traj, BIGLIST[ID3]);
 
     stopTime_frame, timeStopped, velocityArray, runningVelocityAverage, runningVelocityAverage_error, traj_frames, directionCorrelationArray = A.plotTrajWithSpecificID(A, BIGLIST_traj, ID);
+    
+    # Calculate velociy before stopping time:
+    stopIndex = int(stopTime_frame - traj_frames[0] - 10);
+    velocityBeforeStopArray = velocityArray[0:stopIndex];
+    AvVelocityBeforeStopArray = np.mean(velocityBeforeStopArray);
+    AvVelocityBeforeStopArray_error = np.std(velocityBeforeStopArray);
 
     IDs = str(ID)+'+'+str(ID2)+'+'+str(ID3);
     trajArrayName = fileDir[len(fileDir)-15:len(fileDir)]+'_ID'+str(ID);
@@ -441,7 +448,7 @@ if (len(sys.argv) > 3):
     plt.savefig(lysisEventDataFileDir+trajArrayName);
     plt.show()
 
-    A.appendTrajectory(A, BIGLIST_traj, IDs, stopTime_frame, timeStopped, lysisEventDataFileDir, lysisEventDataFile, trajArrayName);
+    A.appendTrajectory(A, BIGLIST_traj, IDs, stopTime_frame, timeStopped, lysisEventDataFileDir, lysisEventDataFile, trajArrayName, AvVelocityBeforeStopArray, AvVelocityBeforeStopArray_error);
 
 elif (len(sys.argv) == 3):
     ## Add two BIGLIST trajectories together:
@@ -455,6 +462,12 @@ elif (len(sys.argv) == 3):
     BIGLIST_traj = A.addBIGLISTTrajectories(A, BIGLIST[ID], BIGLIST[ID2]);
 
     stopTime_frame, timeStopped, velocityArray, runningVelocityAverage, runningVelocityAverage_error, traj_frames, directionCorrelationArray = A.plotTrajWithSpecificID(A, BIGLIST_traj, ID);
+    
+    # Calculate velociy before stopping time:
+    stopIndex = int(stopTime_frame - traj_frames[0] - 10);
+    velocityBeforeStopArray = velocityArray[0:stopIndex];
+    AvVelocityBeforeStopArray = np.mean(velocityBeforeStopArray);
+    AvVelocityBeforeStopArray_error = np.std(velocityBeforeStopArray);
 
     IDs = str(ID)+'+'+str(ID2)
     trajArrayName = fileDir[len(fileDir)-15:len(fileDir)]+'_ID'+str(ID);
@@ -462,7 +475,7 @@ elif (len(sys.argv) == 3):
     plt.savefig(lysisEventDataFileDir+trajArrayName);
     plt.show()
 
-    A.appendTrajectory(A, BIGLIST_traj, IDs, stopTime_frame, timeStopped, lysisEventDataFileDir, lysisEventDataFile, trajArrayName);
+    A.appendTrajectory(A, BIGLIST_traj, IDs, stopTime_frame, timeStopped, lysisEventDataFileDir, lysisEventDataFile, trajArrayName, AvVelocityBeforeStopArray, AvVelocityBeforeStopArray_error);
 
 elif (len(sys.argv) > 1):
     ID = int(sys.argv[1]);
@@ -471,13 +484,19 @@ elif (len(sys.argv) > 1):
     stopTime_frame, timeStopped, velocityArray, runningVelocityAverage, runningVelocityAverage_error, traj_frames, directionCorrelationArray = A.plotTrajWithSpecificID(A, BIGLIST_traj, ID);
     ##A.plotTrajWithSpecificID(A, BIGLIST, ID, plotRodLength=1);
     
+    # Calculate velociy before stopping time:
+    stopIndex = int(stopTime_frame - traj_frames[0] - 10);
+    velocityBeforeStopArray = velocityArray[0:stopIndex];
+    AvVelocityBeforeStopArray = np.mean(velocityBeforeStopArray);
+    AvVelocityBeforeStopArray_error = np.std(velocityBeforeStopArray);
+
     IDs = ID;
     trajArrayName = fileDir[len(fileDir)-15:len(fileDir)]+'_ID'+str(ID);
     
     plt.savefig(lysisEventDataFileDir+trajArrayName);
     plt.show()
 
-    A.appendTrajectory(A, BIGLIST_traj, IDs, stopTime_frame, timeStopped, lysisEventDataFileDir, lysisEventDataFile, trajArrayName);
+    A.appendTrajectory(A, BIGLIST_traj, IDs, stopTime_frame, timeStopped, lysisEventDataFileDir, lysisEventDataFile, trajArrayName, AvVelocityBeforeStopArray, AvVelocityBeforeStopArray_error);
 
 
 else:
