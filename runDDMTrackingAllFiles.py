@@ -17,11 +17,7 @@ plt.close('all');
 NumFramesInVideo = 2000;
 initialFrameNum = 1.0;
 NumFramesToAverageOver = 3; #Average over a number of frames to reduce the random effects of diffusion on the calculate swimming velocity
-<<<<<<< HEAD
 minTrajLen = 30;    #3*NumFramesToAverageOver+1;  
-=======
-minTrajLen = 3*NumFramesToAverageOver+1;  
->>>>>>> ae5d5525f7a6c675a0d21e3134b477be15dd0728
 fps = 50;
 timePerFrame = 1./fps;
 pixelsToMicrons = 0.702;    # For x20 Mag
@@ -68,13 +64,13 @@ plotCurveFittedData = 0;
 
 #fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-135326-AsImageSequences/';
 #fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-140137-AsImageSequences/';
-#fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/';
+fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/';
 
 ## UBUNTU ###
 #fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-135326-AsImageSequences/';
 #fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/DDMmovies180202-140137-AsImageSequences/';
 #fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/';
-fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/';
+#fileDir='../../../../../../../media/cameron/MyBook/MastersProject/Data/20180202/20170202DDMx20-50fps/';
 
 trackingFile = '/filterTracks2DtOutput/tracks_fixed.dat';
 
@@ -83,8 +79,8 @@ trackingFile = '/filterTracks2DtOutput/tracks_fixed.dat';
 ##### Create output file directory where tracking plots will be saved #####
 #outputSaveFileDir = fileDir+'trackingOutput/';
 #outputSaveFileDir = '../../Data/Results/DDM/';
-#outputSaveFileDir = '../../../../../../../../Volumes/CBOGGONUSB/Data/DDMResults/';
-outputSaveFileDir = '../../../../../../../media/cameron/CBOGGONUSB/Data/DDMResults/';
+outputSaveFileDir = '../../../../../../../../Volumes/CBOGGONUSB/Data/DDMResults/';
+#outputSaveFileDir = '../../../../../../../media/cameron/CBOGGONUSB/Data/DDMResults/';
 
 try:
     os.stat(outputSaveFileDir)
@@ -308,7 +304,11 @@ A.plotNormalisedHistograms(fullTraj_velocityPos02[timesToPlotHist[0]], labelPos0
 
 
 #Plot histograms of all positions on same figure, shortly after infection 
-A.plotHistogramsInSameFig(fullTraj_velocityPos00[0], labelPos00_0, data0_1=fullTraj_velocityPos00[1], label0_1=labelPos00_1, data1_0=fullTraj_velocityPos01[0], label1_0=labelPos01_0, data1_1=fullTraj_velocityPos01[1], label1_1=labelPos01_1, data2_0=fullTraj_velocityPos02[0], label2_0=labelPos02_0, data2_1=fullTraj_velocityPos02[1], label2_1=labelPos02_1, xlbl='Normalised Velocity (v/<v>)', saveFilename=outputSaveFileDir+'HistogramsShortlyAfterInfection');
+
+#A.plotHistogramsInSameFig(fullTraj_velocityPos00[0], labelPos00_0, data0_1=fullTraj_velocityPos00[1], label0_1=labelPos00_1, data1_0=fullTraj_velocityPos01[0], label1_0=labelPos01_0, data1_1=fullTraj_velocityPos01[1], label1_1=labelPos01_1, data2_0=fullTraj_velocityPos02[0], label2_0=labelPos02_0, data2_1=fullTraj_velocityPos02[1], label2_1=labelPos02_1, xlbl='Normalised Velocity (v/<v>)', saveFilename=outputSaveFileDir+'HistogramsShortlyAfterInfection');
+A.plotHistogramsInSameFig(fullTraj_velocityPos00[timesToPlotHist[0]], labelPos00_0, data0_1=fullTraj_velocityPos00[timesToPlotHist[1]], label0_1=labelPos00_1, data0_2=fullTraj_velocityPos00[timesToPlotHist[2]], label0_2=labelPos00_2, data1_0=fullTraj_velocityPos01[timesToPlotHist[0]], label1_0=labelPos01_0, data1_1=fullTraj_velocityPos01[timesToPlotHist[1]], label1_1=labelPos01_1, data1_2=fullTraj_velocityPos01[timesToPlotHist[2]], label1_2=labelPos01_2, data2_0=fullTraj_velocityPos02[timesToPlotHist[0]], label2_0=labelPos02_0, data2_1=fullTraj_velocityPos02[timesToPlotHist[1]], label2_1=labelPos02_1, data2_2=fullTraj_velocityPos02[timesToPlotHist[2]], label2_2=labelPos02_2, xlbl='Normalised Velocity (v/<v>)', saveFilename=outputSaveFileDir+'HistogramsInSameFig');
+
+A.plotHistogramsInSameFig(fullTraj_velocityPos00[timesToPlotHist[0]], labelPos00_0, data0_1=fullTraj_velocityPos00[timesToPlotHist[2]], label0_1=labelPos00_2, data0_2=fullTraj_velocityPos00[timesToPlotHist[3]], label0_2=labelPos00_3, data1_0=fullTraj_velocityPos01[timesToPlotHist[0]], label1_0=labelPos01_0, data1_1=fullTraj_velocityPos01[timesToPlotHist[2]], label1_1=labelPos01_2, data1_2=fullTraj_velocityPos01[timesToPlotHist[3]], label1_2=labelPos01_3, data2_0=fullTraj_velocityPos02[timesToPlotHist[0]], label2_0=labelPos02_0, data2_1=fullTraj_velocityPos02[timesToPlotHist[2]], label2_1=labelPos02_2, data2_2=fullTraj_velocityPos02[timesToPlotHist[3]], label2_2=labelPos02_3, xlbl='Normalised Velocity (v/<v>)', saveFilename=outputSaveFileDir+'HistogramsInSameFig');
 
 
 # Plot lysis line

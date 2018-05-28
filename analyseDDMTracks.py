@@ -338,36 +338,21 @@ class analyseTrajectories:
         #Determine if trajectory is for swimmers, diffusers or adherers
         k_exponent = A.separateDiffusersAndSwimmers(A, meanSquaredDispArray, tauArray);
         
-<<<<<<< HEAD
         if (k_exponent < self.minSwimmingExponent):
             #Non Swimmer so no point continuing to calculate velocity. Return error.
             return -11, displacementArray, velocityArray, k_exponent
         
         #Calculate average velocity by fitting to mean squared displacement function. This method accounts for pixel bias.
         #AvVelocity = A.fitVelocities(A, meanSquaredDispArray, tauArray);
-=======
-
-#        if (k_exponent < self.minSwimmingExponent):
-#            #Non Swimmer so no point continuing to calculate velocity. Return error.
-#            return -11, displacementArray, velocityArray, k_exponent
-#        
-#        #Calculate average velocity by fitting to mean squared displacement function. This method accounts for pixel bias.
-#        AvVelocity = A.fitVelocities(A, meanSquaredDispArray, tauArray);
->>>>>>> ae5d5525f7a6c675a0d21e3134b477be15dd0728
 
         #Calculate average velocity and distance travelled by particle -- OLD METHOD FOR CALCULATING VELOCITY
         AvDisplacement = np.mean(displacementArray);
         AvDisplacement_error = np.std(displacementArray)/np.sqrt(len(displacementArray));   #Standard error on mean
         
 
-        AvVelocity = np.mean(velocityArray);
-<<<<<<< HEAD
+        #AvVelocity = np.mean(velocityArray);
         AvVelocity = AvDisplacement/(self.NumFramesToAverageOver*self.timePerFrame);
         AvVelocity_error = np.std(velocityArray)/np.sqrt(len(velocityArray));   #Standard deviation (NB: Not standard error on mean)
-=======
-        ##AvVelocity = AvDisplacement/(self.NumFramesToAverageOver*self.timePerFrame);
-        AvVelocity_error = np.std(velocityArray)/np.sqrt(len(velocityArray));   #Standard error: standard deviation/sqrt(N)
->>>>>>> ae5d5525f7a6c675a0d21e3134b477be15dd0728
 
         return AvVelocity, displacementArray, velocityArray, k_exponent
 
@@ -690,7 +675,8 @@ class analyseTrajectories:
         plt.xlabel(xlbl);
         plt.ylabel(ylbl);
         plt.title('Control')
-        plt.legend(loc='upper right');
+        #plt.legend(loc='upper right');
+        plt.legend(loc='lower center');
 
         #plot second subfigure
         plt.subplot(1, 3, 2)
@@ -742,7 +728,8 @@ class analyseTrajectories:
         plt.xlabel(xlbl);
         #plt.ylabel(ylbl);
         plt.title('Phage 1')
-        plt.legend(loc='upper right');
+        #plt.legend(loc='upper right');
+        plt.legend(loc='lower center');
         
         #plot third subfigure
         plt.subplot(1, 3, 3)
@@ -794,7 +781,8 @@ class analyseTrajectories:
         plt.xlabel(xlbl);
         #plt.ylabel(ylbl);
         plt.title('Phage 2')
-        plt.legend(loc='upper right');
+        #plt.legend(loc='upper right');
+        plt.legend(loc='lower center');
         
         if (saveFilename != None):
             plt.savefig(saveFilename);
@@ -804,37 +792,28 @@ class analyseTrajectories:
         return
 
     # Plot distribution of velocities
-    def plotNormalisedHistograms(self, data00, label00=np.array(None), data01=np.array(None), label01=np.array(None), data02=np.array(None), label02=np.array(None), data03=np.array(None), label03=np.array(None), data04=np.array(None), label04=np.array(None), data05=np.array(None), label05=np.array(None), data06=np.array(None), label06=np.array(None), xlbl='bins', ylbl='Normalised Frequency', xlim=np.array(None), plotAsLines=False, saveFilename=None, binNum=None):
+    def plotNormalisedHistograms(self, data00, label00=np.array(None), data01=np.array(None), label01=np.array(None), data02=np.array(None), label02=np.array(None), data03=np.array(None), label03=np.array(None), data04=np.array(None), label04=np.array(None), data05=np.array(None), label05=np.array(None), data06=np.array(None), label06=np.array(None), xlbl='bins', ylbl='Normalised Frequency', xlim=np.array(None), plotAsLines=False, saveFilename=None, binNum=np.array(None)):
         
         '''
         Note: Code normalises bin sizes according to bin size of data00.
         '''
 
         plt.figure(figsize=(10, 6))
-<<<<<<< HEAD
         plt.rc('font', family='serif', size=15);
-        #data00 = data00/np.mean(data00);
-        data00 = data00/len(data00);
+        data00 = data00/np.mean(data00);
+        #data00 = data00/len(data00);
          
         #binNum = np.linspace(0, 2, 30);
         IQR = 0.75*np.max(data00) - 0.25*np.max(data00)
         #bins = IQR/np.power(len(data00), 1./3);       #Calculate bin size using Freedman - Diaconis rule. This is a bit big so divided by 2.
         bins = 0.25*IQR/np.power(len(data00), 1./3); #TEMP BINS
-        binNum = np.linspace(0, 2, int(2./bins));
         alphaVal = 0.3;
-=======
-        plt.rc('font', family='serif', size=12);
-        data00 = data00/np.mean(data00);
->>>>>>> ae5d5525f7a6c675a0d21e3134b477be15dd0728
         
         alphaVal = 0.3;
-	if (binNum == None):
-            #binNum = np.linspace(0, 2, 30);
-            IQR = 0.75*np.max(data00) - 0.25*np.max(data00)
-            #bins = IQR/np.power(len(data00), 1./3);       #Calculate bin size using Freedman - Diaconis rule. This is a bit big so divided by 2.
-            bins = 0.5*IQR/np.power(len(data00), 1./3); #TEMP BINS
+	if (binNum.any() == None):
             binNum = np.linspace(0, 2, int(2./bins));
-		
+
+
         weights = np.ones_like(data00)/float(len(data00));
         if (plotAsLines == True):
             y_data00,binEdges = np.histogram(data00[:], weights=weights, bins=binNum);
@@ -1016,7 +995,8 @@ class analyseTrajectories:
 #    def plotDataSetsWithErrorBars(self, x0, y0, label0, y0_error=np.array(None), x1=np.array(None), y1=np.array(None), label1=None, y1_error=np.array(None), x2=np.array(None), y2=np.array(None), label2=None, y2_error=np.array(None), x3=np.array(None), y3=np.array(None), label3=None, y3_error=np.array(None), x4=np.array(None), y4=np.array(None), label4=None, y4_error=np.array(None), title=None, xlbl=None, ylbl=None):
     def plotDataSetsWithErrorBars(self, x0, y0, label0, y0_error=np.array(None), x1=np.array(None), y1=np.array(None), y1_error=np.array(None), label1=None, x2=np.array(None), y2=np.array(None), y2_error=np.array(None), label2=None, x3=np.array(None), y3=np.array(None), y3_error=np.array(None), label3=None, x4=np.array(None), y4=np.array(None), y4_error=np.array(None), label4=None, title=None, xlbl=None, ylbl=None, plotLegend=True):
         
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(12, 7))
+        plt.rc('font', family='serif', size=18);
 
         if (y0_error.all() == None):
             plt.plot(x0, y0, 'x-', label=label0)
@@ -1034,24 +1014,23 @@ class analyseTrajectories:
                 plt.plot(x2, y2, '^-', label=label2)
             else:
                 plt.errorbar(x2, y2, yerr=y2_error, fmt='^-', label = label2)
-        
-        if(y3.all() != None): 
+
+        if(y3.all() != None):
             if (y3_error.all() == None):
                 plt.plot(x3, y3, '--', label=label3)     #Removed 's-' so does not show data marker on this plot.
             else:
                 plt.errorbar(x3, y3, yerr=y3_error, fmt='--', label = label3)
-        
-        if(y4.all() != None): 
+
+        if(y4.all() != None):
             if (y4_error.all() == None):
                 plt.plot(x4, y4, 'd-', label=label4)
             else:
                 plt.errorbar(x4, y4, yerr=y4_error, fmt='d-', label = label4)
-        
+
         if(title != None): plt.suptitle(title);
         if(xlbl != None): plt.xlabel(xlbl);
         if(ylbl != None): plt.ylabel(ylbl);
         if(plotLegend == True): plt.legend(loc='upper left');
-        plt.rc('font', family='serif', size=15);
 
 #        if(y1.all() != None): plt.legend(loc='upper right');
         #plt.legend(loc='upper right');
@@ -1061,11 +1040,48 @@ class analyseTrajectories:
 
         return
 
-    # write values to file
+    # Plot data sets with two different y values so y axes on left and right hand side plot
+    def plotDataWithTwoYAxes(self, x0_L, y0_L, label0_L, y0_L_error=np.array(None), x1_L=np.array(None), y1_L=np.array(None), y1_L_error=np.array(None), label1_L=None, x0_R=np.array(None), y0_R=np.array(None), y0_R_error=np.array(None), label0_R=None, x1_R=np.array(None), y1_R=np.array(None), y1_R_error=np.array(None), label1_R=None, title=None, xlbl=None, ylbl_L=None, ylbl_R=None, plotLegend=True):
+        
+        plt.figure(figsize=(10, 6));
+        plt.rc('font', family='serif', size=15);
+
+        # Plot y1 vs x in blue on the left vertical axis.
+        plt.xlabel(xlbl)
+        plt.ylabel(ylbl_L, color="b")
+        plt.tick_params(axis="y", labelcolor="b")
+        plt.errorbar(x0_L, y0_L, yerr=y0_L_error, fmt='b-', linewidth=2, label=label0_L)
+
+        if (x1_L.any() == None):
+            if (y1_L_error.any() == None):
+                plt.plot(x1_L, y1_L, "b--", linewidth=2, label=label1_L)
+            else:
+                plt.errorbar(x1_L, y1_L, yerr=y1_L_error, fmt='b-', linewidth=2, label=label1_L)
+
+        if (x0_R.any() == None):
+            # Plot y2 vs x in red on the right vertical axis.
+            plt.twinx();
+            plt.ylabel(ylbl_R, color="r");
+            plt.tick_params(axis="y", labelcolor="r");
+            
+            if (x0_R_error.any() == None):
+                plt.plot(x0_R, y0_R, "r-", linewidth=2, label=label0_R)
+            else:
+                plt.errorbar(x0_R, y0_R, yerr=y0_R_error, fmt='r-', linewidth=2, label=label0_R)
+
+            if (x1_L.any() == None):
+                if (x0_R_error.any() == None):
+                    plt.plot(x1_R, y1_R, "r--", linewidth=2, label=label1_R);
+                else:
+                    plt.errorbar(x1_R, y1_R, yerr=y1_R_error, fmt='r-', linewidth=2, label=label1_R)
+        
+        return
+
+        # write values to file
     def writeToFile(self, filename, data):
         # ADD IF STATEMENT, CHECK IF FILE EXISTS AND IF NOT CREATE ONE.
         myFile = open(filename,'w')
-        myFile.write('i Pdf\n\n');    
+        myFile.write('i Pdf\n\n');
         for i in range(0,len(data)): myFile.write('%d           %f\n' % (i, data[i]));
         myFile.close()
 

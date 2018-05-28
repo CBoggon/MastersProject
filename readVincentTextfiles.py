@@ -58,7 +58,7 @@ def produceISFExamples(A):
 
     #A.plotDataSetsWithErrorBars(tau, f_diff, 'Diffusers', x1=tau, y1=f_swim, label1='Swimmers', x2=tau, y2=f_mix, label2=str(int(100*beta))+':'+str(int(100*(1-beta)))+' swimmers:diffusers', xlbl='Delay time (seconds)', ylbl='f(q, tau)', plotLegend=True);
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 7))
     plt.plot(tau, f_diff, '-', label='Diffusers')
     plt.plot(tau, f_swim, '-', label='Single Swimmer')
     plt.plot(tau, f_swimAv, '-', label='Average Swimmers')
@@ -70,9 +70,9 @@ def produceISFExamples(A):
     plt.legend(loc='upper right')
 
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 7))
     plt.plot(tau, g_diff, '-', label='Diffusers')
-   #plt.plot(tau, g_swim, '-', label='Single Swimmer')
+    plt.plot(tau, g_swim, '-', label='Single Swimmer')
     plt.plot(tau, g_swimAv, '-', label='Average Swimmers')
     plt.plot(tau, g_mix, '-', label=str(int(100*beta))+':'+str(int(100*(1-beta)))+' swimmers:diffusers')
     plt.xlabel('Delay time (seconds)')
@@ -225,15 +225,15 @@ Normalised_lysisLine_y = np.linspace(0, 1, 10);
 
 
 # Plot average speed:
-A.plotDataSetsWithErrorBars(Time_Pos00, AvVelocityArray_Pos00, 'Control', y0_error=AvVelocityArray_error_Pos00, x1=Time_Pos01, y1=AvVelocityArray_Pos01, y1_error=AvVelocityArray_error_Pos01, label1='Phage 1', x2=Time_Pos02, y2=AvVelocityArray_Pos02, y2_error=AvVelocityArray_error_Pos02, label2='Phage 2', x3=lysisLine_x, y3=lysisLine_y, label3='Phage Infection', xlbl='Time (Minutes)', ylbl='Average Velocity (micrometers/second)', plotLegend=False);
-plt.legend(loc='lower center')
+A.plotDataSetsWithErrorBars(Time_Pos00, AvVelocityArray_Pos00, 'Control', y0_error=AvVelocityArray_error_Pos00, x1=Time_Pos01, y1=AvVelocityArray_Pos01, y1_error=AvVelocityArray_error_Pos01, label1='Phage 1', x2=Time_Pos02, y2=AvVelocityArray_Pos02, y2_error=AvVelocityArray_error_Pos02, label2='Phage 2', x3=lysisLine_x, y3=lysisLine_y, label3='Phage Added', xlbl='Time (Minutes)', ylbl='Average Velocity (micrometers/second)', plotLegend=False);
+plt.legend(loc='lower left')
 plt.ylim([-2,50])
 outputFile = outputSaveFileDir+'DDMAvVelocityVsTime';
 plt.savefig(outputFile);
 
 
 # Plot normalised amplitude vs time:
-A.plotDataSetsWithErrorBars(Time_Pos00, NormalisedAmplitudeArray_Pos00, 'Control', y0_error=NormalisedAmplitudeArray_error_Pos00, x1=Time_Pos01, y1=NormalisedAmplitudeArray_Pos01, y1_error=NormalisedAmplitudeArray_error_Pos01, label1='Phage 1', x2=Time_Pos02, y2=NormalisedAmplitudeArray_Pos02, y2_error=NormalisedAmplitudeArray_error_Pos02, label2='Phage 2', x3=lysisLine_x, y3=4*Normalised_lysisLine_y, label3='Phage Infection', xlbl='Time (Minutes)', ylbl='Normalised Amplitude, A(q)', plotLegend=False);
+A.plotDataSetsWithErrorBars(Time_Pos00, NormalisedAmplitudeArray_Pos00, 'Control', y0_error=NormalisedAmplitudeArray_error_Pos00, x1=Time_Pos01, y1=NormalisedAmplitudeArray_Pos01, y1_error=NormalisedAmplitudeArray_error_Pos01, label1='Phage 1', x2=Time_Pos02, y2=NormalisedAmplitudeArray_Pos02, y2_error=NormalisedAmplitudeArray_error_Pos02, label2='Phage 2', x3=lysisLine_x, y3=4*Normalised_lysisLine_y, label3='Phage Added', xlbl='Time (Minutes)', ylbl='Normalised Amplitude, A(q)', plotLegend=False);
 plt.legend(loc='upper center')
 #plt.ylim([-2,50])
 outputFile = outputSaveFileDir+'DDMNAqVsTime';
@@ -252,20 +252,19 @@ MotileFractionArray_Pos02_del = np.delete(MotileFractionArray_Pos02, deletePosit
 
 
 # Plot motile fraction vs time:
-A.plotDataSetsWithErrorBars(Time_Pos00, NonMotileFractionArray_Pos00, 'Control', y0_error=NonMotileFractionArray_error_Pos00, x1=Time_Pos01, y1=NonMotileFractionArray_Pos01, y1_error=NonMotileFractionArray_error_Pos01, label1='Phage 1', x2=Time_Pos02_del, y2=NonMotileFractionArray_Pos02_del, y2_error=NonMotileFractionArray_error_Pos02_del, label2='Phage 2', x3=lysisLine_x, y3=Normalised_lysisLine_y, label3='Phage Infection', xlbl='Time (Minutes)', ylbl='Non-Motile Fraction', plotLegend=False);
-plt.legend(loc='lower center')
-plt.ylim([-0,1.1])
-outputFile = outputSaveFileDir+'DDMNonMotileFractionVsTime';
-plt.savefig(outputFile);
+#A.plotDataSetsWithErrorBars(Time_Pos00, NonMotileFractionArray_Pos00, 'Control', y0_error=NonMotileFractionArray_error_Pos00, x1=Time_Pos01, y1=NormalisedAmplitudeArray_Pos01, y1_error=NormalisedAmplitudeArray_error_Pos01, label1='A(q)', x2=Time_Pos01, y2=NonMotileFractionArray_Pos02_del, y2_error=NonMotileFractionArray_error_Pos02_del, label2='Phage 2', x3=lysisLine_x, y3=Normalised_lysisLine_y, label3='Phage Infection', xlbl='Time (Minutes)', ylbl='Non-Motile Fraction', plotLegend=False);
+#plt.legend(loc='lower center')
+#plt.ylim([-0,1.1])
+#outputFile = outputSaveFileDir+'DDMNonMotileFractionVsTime';
+#plt.savefig(outputFile);
 
 
 # Plot motile fraction vs time:
-A.plotDataSetsWithErrorBars(Time_Pos00, MotileFractionArray_Pos00, 'Control', y0_error=NonMotileFractionArray_error_Pos00, x1=Time_Pos01, y1=MotileFractionArray_Pos01, y1_error=NonMotileFractionArray_error_Pos01, label1='Phage 1', x2=Time_Pos02_del, y2=MotileFractionArray_Pos02_del, y2_error=NonMotileFractionArray_error_Pos02_del, label2='Phage 2', x3=lysisLine_x, y3=Normalised_lysisLine_y, label3='Phage Infection', xlbl='Time (Minutes)', ylbl='Motile Fraction', plotLegend=False);
-plt.legend(loc='lower center')
+A.plotDataSetsWithErrorBars(Time_Pos00, MotileFractionArray_Pos00, 'Control', y0_error=NonMotileFractionArray_error_Pos00, x1=Time_Pos01, y1=MotileFractionArray_Pos01, y1_error=NonMotileFractionArray_error_Pos01, label1='Phage 1', x2=Time_Pos02_del, y2=MotileFractionArray_Pos02_del, y2_error=NonMotileFractionArray_error_Pos02_del, label2='Phage 2', x3=lysisLine_x, y3=Normalised_lysisLine_y, label3='Phages Added', xlbl='Time (Minutes)', ylbl='Motile Fraction', plotLegend=False);
+plt.legend(loc='lower left')
 plt.ylim([-0,1.1])
 outputFile = outputSaveFileDir+'DDMMotileFractionVsTime';
 plt.savefig(outputFile);
-
 
 
 # Plot DICF vs tau:
@@ -276,6 +275,15 @@ plt.legend(loc='upper left')
 plt.xscale('log')
 #plt.ylim([-0,1.1])
 outputFile = outputSaveFileDir+'DDMGVsQ';
+plt.savefig(outputFile);
+
+
+
+# Plot v, Naq and motile-fraction for Phage 1:
+A.plotDataWithTwoYAxes(Time_Pos01, AvVelocityArray_Pos01, 'Average Velocity', y0_L_error=AvVelocityArray_error_Pos01, x1_L=lysisLine_x, y1_L=lysisLine_y, label1_L='Phage Added', x0_R=Time_Pos01, y0_R=MotileFractionArray_Pos01, y0_R_error=NonMotileFractionArray_error_Pos01, label0_R='Motile Fraction', x1_R=Time_Pos01, y1_R=NormalisedAmplitudeArray_Pos01, y1_R_error=NormalisedAmplitudeArray_Pos01, label1_R='Normalised A(q)', xlbl='Time (Minutes)', ylbl_L='Swimming Speed (micrometers per second)', ylbl_R='Motile Fraction or Normalised A(q)', plotLegend=False);
+plt.legend(loc='center right')
+plt.ylim([-0,1.1])
+outputFile = outputSaveFileDir+'DDMPhage1AllData';
 plt.savefig(outputFile);
 
 

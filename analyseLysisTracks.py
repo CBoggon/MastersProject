@@ -440,7 +440,7 @@ if (len(sys.argv) > 3):
     stopIndex = int(stopTime_frame - traj_frames[0] - 10);
     velocityBeforeStopArray = velocityArray[0:stopIndex];
     AvVelocityBeforeStopArray = np.mean(velocityBeforeStopArray);
-    AvVelocityBeforeStopArray_error = np.std(velocityBeforeStopArray);
+    AvVelocityBeforeStopArray_error = np.std(velocityBeforeStopArray)/2;
 
     IDs = str(ID)+'+'+str(ID2)+'+'+str(ID3);
     trajArrayName = fileDir[len(fileDir)-15:len(fileDir)]+'_ID'+str(ID);
@@ -467,7 +467,7 @@ elif (len(sys.argv) == 3):
     stopIndex = int(stopTime_frame - traj_frames[0] - 10);
     velocityBeforeStopArray = velocityArray[0:stopIndex];
     AvVelocityBeforeStopArray = np.mean(velocityBeforeStopArray);
-    AvVelocityBeforeStopArray_error = np.std(velocityBeforeStopArray);
+    AvVelocityBeforeStopArray_error = np.std(velocityBeforeStopArray)/2;
 
     IDs = str(ID)+'+'+str(ID2)
     trajArrayName = fileDir[len(fileDir)-15:len(fileDir)]+'_ID'+str(ID);
@@ -488,7 +488,7 @@ elif (len(sys.argv) > 1):
     stopIndex = int(stopTime_frame - traj_frames[0] - 10);
     velocityBeforeStopArray = velocityArray[0:stopIndex];
     AvVelocityBeforeStopArray = np.mean(velocityBeforeStopArray);
-    AvVelocityBeforeStopArray_error = np.std(velocityBeforeStopArray);
+    AvVelocityBeforeStopArray_error = np.std(velocityBeforeStopArray)/2;
 
     IDs = ID;
     trajArrayName = fileDir[len(fileDir)-15:len(fileDir)]+'_ID'+str(ID);
