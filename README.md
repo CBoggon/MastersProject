@@ -1,3 +1,5 @@
+WARNING: Rearranged files into folders so file paths in all programs need to be change to take into account of this before they will work.
+
 
 *Purpose:* 
 Code written for masters project which aimed to use DDM and particle tracking to analyse the swimming behaviour of T4 bacteriophage infected K-12 AB1157 E. Coli.
