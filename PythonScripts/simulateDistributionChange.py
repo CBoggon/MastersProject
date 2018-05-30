@@ -1,3 +1,14 @@
+#!python
+#
+###############################################################################
+#In analysing the velocity distributions from particle tracking in sample bulk, I noticed the velocity distributions became more symmetric as the phage infection progressed.
+#EDIT: This was not used in report - see report for discussion of why this ocurred. It is due to 2D progression onto 3D image.
+    
+#Here is code written to demonstrate that when two distributions are iteratively convolved, from the central limit theorem, we expect the resultant distribution to look more and more like a gaussian.
+#
+###############################################################################
+
+
 #from matplotlib import pyplot as plt
 import numpy as np
 import matplotlib.pyplot as plt

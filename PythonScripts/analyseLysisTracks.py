@@ -1,3 +1,28 @@
+#!python
+#
+###############################################################################
+#Function used to manually build .txt file which contains the ID number, time and location of bacteria which stop swimming for a while, diffuse on a surface and then lyse. I didn't manage to get an automatic code to find these lysis events (this was attempted in X) so had to do it manually.
+#
+#Procedure:
+#    Looked at .avi video until I found a lysis event.
+#    
+#    Looked at video outputted from Bashscripts/labelImages.py to find the lysing bacteria and its corresponding ID.
+#    
+#    Ran this program, inputting the ID number (or 2, or 3 Id numbers if the trajectory was broken up). This is achieved by inputting:
+#        $ python2 analyseLysisTracks.py ID0 ID1 ID2
+#    Where ID* corresponds to required ID.
+#    
+#    The program then calculates the trajectory for that ID, plots the trajectory so you can look at it, then asks if you want to save details of this trajectory to a text file including data: 
+#    trajectory ID, frame at which bacteria stopped, calculated stopping time, lower error on stopping time, upper error on stopping time, Average velocity before stopping, error on average velocity before stopping, trajArrayName.
+#
+#    This text file is then read in by 'readStopTimeFile.py'.
+#
+#Notes: 
+#    This program isn't very good but did the job I needed it to. It allows me string together trajecotories that were broken up but I didn't use broken trajectories in final analysis because the process of breaking the trajectory meant that usually several frames of information were missing. 
+#
+###############################################################################
+
+
 #from matplotlib import pyplot as plt
 import numpy as np
 import matplotlib.pyplot as plt
@@ -420,7 +445,7 @@ A = analyseTrajectories(minTrajLen, NumFramesToAverageOver, timePerFrame, pixels
 ## Plot displacements throughout trajectories
 #A.plotRandomTrajectories(A, lysisVelocityArray, 'time (seconds)', 'Velocity (pixels)');
 
-
+#Input contains 3 IDs
 if (len(sys.argv) > 3):
     ## Add two BIGLIST trajectories together:
     print 'sys.argv[1] = '+str(sys.argv[1])
@@ -450,6 +475,7 @@ if (len(sys.argv) > 3):
 
     A.appendTrajectory(A, BIGLIST_traj, IDs, stopTime_frame, timeStopped, lysisEventDataFileDir, lysisEventDataFile, trajArrayName, AvVelocityBeforeStopArray, AvVelocityBeforeStopArray_error);
 
+#Input has 2 IDs
 elif (len(sys.argv) == 3):
     ## Add two BIGLIST trajectories together:
     print 'sys.argv[1] = '+str(sys.argv[1])
@@ -477,6 +503,8 @@ elif (len(sys.argv) == 3):
 
     A.appendTrajectory(A, BIGLIST_traj, IDs, stopTime_frame, timeStopped, lysisEventDataFileDir, lysisEventDataFile, trajArrayName, AvVelocityBeforeStopArray, AvVelocityBeforeStopArray_error);
 
+
+#Input has 1 ID.
 elif (len(sys.argv) > 1):
     ID = int(sys.argv[1]);
     #ID = 2362;

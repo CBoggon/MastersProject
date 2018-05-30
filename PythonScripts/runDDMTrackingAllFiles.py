@@ -1,3 +1,14 @@
+#!python
+#
+###############################################################################
+#Master program for running tracking analysis on videos taken in bulk of sample (same videos as used for DDM analysis). After running 'runTracking.sh', this program reads in all the files called 'tracks_fixed.dat', which are saved in a folder within the folder containing video as an image sequence, calculates all trajectories, filters out non swimmers and plots results as; histograms of velocity distribution for each sample, average tracked velocity vs time and number of tracked bacteria vs time.
+#
+#My experiment involved sequentially videoing 3 different samples for 2000 frames at 50 fps (so each video is 40s a part and each subsequent video on the same sample is 3x40s=2 mins a part). The program identifies which file belongs to which video by reading the name of the folder it is in. Pos00 = control, Pos01 = phage1, pos02 = phage2.
+#
+#
+###############################################################################
+
+
 #from matplotlib import pyplot as plt
 import numpy as np
 import matplotlib.pyplot as plt
@@ -33,11 +44,13 @@ minTauVals = 1;
 BacteriaCounterFrame = 200.;
 
 lengthOfVideo = timePerFrame*NumFramesInVideo;  #Total length of video in seconds
+
+## Code takes ages to run so if I want to shorten program during debugging, I just change the value of maxVids.
 maxVids = 16;   #Define max number of videos to analyse if the last videos have very little to analyse in them.
 
 
 # Choose whether to use manually added times or calculated times in script.
-manualTimes = 1;
+manualTimes = 1;    # 1 = use manual times, 0 use calculated times.
 t0 = '13:53:28';
 time0 = np.array([0., 41., 491, 607, 733, 859, 985, 1111, 1237, 1363, 1489, 1615, 1741, 1867, 1993, 2119]);
 time1 = np.array([238., 279., 523, 649, 775, 901, 1027, 1153, 1279, 1405, 1531, 1657, 1783, 1909, 2035, 2161]);
@@ -55,10 +68,12 @@ time2 = np.array([392., 433., 565, 691, 817, 943, 1069, 1195, 1321, 1447, 1573, 
 #time1 = np.array([238.]);
 #time2 = np.array([392.]);
 
+
 # Choose whether to plot average velocity from schulz fit to data or from mean of data:
-plotCurveFittedData = 0;
+plotCurveFittedData = 0;    #The schulz fit wasn't very good, so set this to 0 to plot mean of data.
 
 ##### Declare input file directory #####
+# (Mac and Ubuntu have slightly different paths to external hard drives)
 
 ## MAC ###
 
@@ -75,8 +90,8 @@ fileDir='../../../../../../../Volumes/MyBook/MastersProject/Data/20180202/201702
 trackingFile = '/filterTracks2DtOutput/tracks_fixed.dat';
 
 
-
 ##### Create output file directory where tracking plots will be saved #####
+
 #outputSaveFileDir = fileDir+'trackingOutput/';
 #outputSaveFileDir = '../../Data/Results/DDM/';
 outputSaveFileDir = '../../../../../../../../Volumes/CBOGGONUSB/Data/DDMResults/';
@@ -125,7 +140,7 @@ timeCounterPos00 = 7*60;
 timeCounterPos01 = 8*60;
 timeCounterPos02 = 9*60;
 
-
+#begin searching through all files in directory.
 measurementList = sorted(os.listdir(fileDir));
 for measurement in measurementList:
     # Skip folders that do not contain image sequences
@@ -239,7 +254,6 @@ for measurement in measurementList:
                 #plt.close('all');
                 
 
-
 #Convert lists to numpy arrays:
 velocityPos00 = np.asarray(velocityPos00);
 velocityErrorPos00 = np.asarray(velocityErrorPos00);
@@ -274,6 +288,7 @@ timesToPlotHist = [0, 3, 6, 9];
 #timesToPlotHist = [0, 1, 0, 1, 0];
 #timesToPlotHist = [0, 0, 0, 0, 0];
 
+#Define labels for plots
 labelPos00_0 = str(datetime.timedelta(seconds=round(timePos00[timesToPlotHist[0]],0)))[2:10];
 labelPos00_1 = str(datetime.timedelta(seconds=round(timePos00[timesToPlotHist[1]],0)))[2:10];
 labelPos00_2 = str(datetime.timedelta(seconds=round(timePos00[timesToPlotHist[2]],0)))[2:10];
@@ -295,7 +310,7 @@ timePos01 = timePos01/60;
 timePos02 = timePos02/60;
 
 
-
+# Plot normalised histrograms for Pos00, Pos01, pos02.
 A.plotNormalisedHistograms(fullTraj_velocityPos00[timesToPlotHist[0]], labelPos00_0, fullTraj_velocityPos00[timesToPlotHist[1]], labelPos00_1, fullTraj_velocityPos00[timesToPlotHist[2]], labelPos00_2, fullTraj_velocityPos00[timesToPlotHist[3]], labelPos00_3, xlbl='Normalised Velocity (v/<v>)', plotAsLines=True, saveFilename=outputSaveFileDir+'Pos00Histograms');
 
 A.plotNormalisedHistograms(fullTraj_velocityPos01[timesToPlotHist[0]], labelPos01_0, fullTraj_velocityPos01[timesToPlotHist[1]], labelPos01_1, fullTraj_velocityPos01[timesToPlotHist[2]], labelPos01_2, fullTraj_velocityPos01[timesToPlotHist[3]], labelPos01_3, xlbl='Normalised Velocity (v/<v>)', plotAsLines=True, saveFilename=outputSaveFileDir+'Pos01Histograms');
@@ -304,6 +319,7 @@ A.plotNormalisedHistograms(fullTraj_velocityPos02[timesToPlotHist[0]], labelPos0
 
 
 #Plot histograms of all positions on same figure, shortly after infection 
+# This is a fancy plot with all three plots on one figure.
 
 #A.plotHistogramsInSameFig(fullTraj_velocityPos00[0], labelPos00_0, data0_1=fullTraj_velocityPos00[1], label0_1=labelPos00_1, data1_0=fullTraj_velocityPos01[0], label1_0=labelPos01_0, data1_1=fullTraj_velocityPos01[1], label1_1=labelPos01_1, data2_0=fullTraj_velocityPos02[0], label2_0=labelPos02_0, data2_1=fullTraj_velocityPos02[1], label2_1=labelPos02_1, xlbl='Normalised Velocity (v/<v>)', saveFilename=outputSaveFileDir+'HistogramsShortlyAfterInfection');
 A.plotHistogramsInSameFig(fullTraj_velocityPos00[timesToPlotHist[0]], labelPos00_0, data0_1=fullTraj_velocityPos00[timesToPlotHist[1]], label0_1=labelPos00_1, data0_2=fullTraj_velocityPos00[timesToPlotHist[2]], label0_2=labelPos00_2, data1_0=fullTraj_velocityPos01[timesToPlotHist[0]], label1_0=labelPos01_0, data1_1=fullTraj_velocityPos01[timesToPlotHist[1]], label1_1=labelPos01_1, data1_2=fullTraj_velocityPos01[timesToPlotHist[2]], label1_2=labelPos01_2, data2_0=fullTraj_velocityPos02[timesToPlotHist[0]], label2_0=labelPos02_0, data2_1=fullTraj_velocityPos02[timesToPlotHist[1]], label2_1=labelPos02_1, data2_2=fullTraj_velocityPos02[timesToPlotHist[2]], label2_2=labelPos02_2, xlbl='Normalised Velocity (v/<v>)', saveFilename=outputSaveFileDir+'HistogramsInSameFig');
@@ -311,7 +327,7 @@ A.plotHistogramsInSameFig(fullTraj_velocityPos00[timesToPlotHist[0]], labelPos00
 A.plotHistogramsInSameFig(fullTraj_velocityPos00[timesToPlotHist[0]], labelPos00_0, data0_1=fullTraj_velocityPos00[timesToPlotHist[2]], label0_1=labelPos00_2, data0_2=fullTraj_velocityPos00[timesToPlotHist[3]], label0_2=labelPos00_3, data1_0=fullTraj_velocityPos01[timesToPlotHist[0]], label1_0=labelPos01_0, data1_1=fullTraj_velocityPos01[timesToPlotHist[2]], label1_1=labelPos01_2, data1_2=fullTraj_velocityPos01[timesToPlotHist[3]], label1_2=labelPos01_3, data2_0=fullTraj_velocityPos02[timesToPlotHist[0]], label2_0=labelPos02_0, data2_1=fullTraj_velocityPos02[timesToPlotHist[2]], label2_1=labelPos02_2, data2_2=fullTraj_velocityPos02[timesToPlotHist[3]], label2_2=labelPos02_3, xlbl='Normalised Velocity (v/<v>)', saveFilename=outputSaveFileDir+'HistogramsInSameFig');
 
 
-# Plot lysis line
+# Plot lysis line -- this is a terrible name. This line indicates when the phages were added.
 lysisLine_x = np.array([0.5 for i in range(0,9)]);
 lysisLine_y = np.array([5.0*i for i in range(0,9)]);
 N_lysisLine_y = np.array([200.0*i for i in range(0,9)]);

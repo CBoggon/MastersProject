@@ -1,3 +1,18 @@
+#!python
+#
+###############################################################################
+#This is a really messy program but quite useful. 
+#
+#It was initially used for looking at one trajectory and changing different parameters to try to tune what parameters would work in an automatic code for finding stopping events. This endeavour failed however (see report for discussion of this).
+#
+#I ended up using the code for plotting specific trajectories by changing the ID number on line 691 (this is at bottom of program. The rest of the commented stuff is not useful).
+#
+#This program is useful for looking at the quality of individual trajectories. It produces figures like Fig. 20 in report so helpful for seeing how much pixel bias and jumping is going on. If the camera had a high resolution, the calculated velocity for each frame would not nearly be so noisy.
+#
+###############################################################################
+#
+
+
 #from matplotlib import pyplot as plt
 import numpy as np
 import matplotlib.pyplot as plt

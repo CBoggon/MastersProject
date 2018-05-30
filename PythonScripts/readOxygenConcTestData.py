@@ -1,3 +1,12 @@
+#!python
+#
+###############################################################################
+#Code for reading files created from FLIM images. On ImageJ, I opened the FLIM images and took intensity cross section across image and outputted intensity data into text file. This code then runs through directory containing these text files, recognises their names and sorts them according to what type of sample they were: glass, control or PDMS.
+#
+#
+###############################################################################
+
+
 #from matplotlib import pyplot as plt
 import numpy as np
 import matplotlib.pyplot as plt

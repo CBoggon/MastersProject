@@ -2,6 +2,8 @@
 #tools for bugs is written to get started with reading files containing found positions and orientations in frames and trajectories
 #available under the MIT license
 
+#This code was given to me by Teun but I added in a line so that it outputted the correct ID. note 'someid' is not the trajecotry ID I use in other programs.
+
 import numpy as np
 from numpy import *
 import matplotlib.pyplot as plt

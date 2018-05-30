@@ -1,3 +1,10 @@
+#!python
+#
+###############################################################################
+#This code was originally designed to do the same as runDDMTrackingAllFiles but only on one file but I haven't touched it in ages so it might be full of buggy.
+#
+###############################################################################
+
 #from matplotlib import pyplot as plt
 import numpy as np
 import matplotlib.pyplot as plt

@@ -3,10 +3,16 @@
 Code written for masters project which aimed to use DDM and particle tracking to analyse the swimming behaviour of T4 bacteriophage infected K-12 AB1157 E. Coli.
 
 
+*Experiment Details:*
+Under a microscope, I sequentially videod bacteria in 3 different PDMS sample chambers. Pos00 = control, Pos01 = phage infected E. Coli, Pos02 = phage infected E. Coli. I videos both in the bulk of the sample (where bacteria are swimming in 3D), which was used for DDM analysis and I also made a program for analysing these videos by tracking, and at the bottom of the chamber on the glass surface where the bacteria moved in 2D.
+
+Typically videos were 50 fps (surface videos at 25 fps), 2000 frames in one video so vids last 40 seconds, and sequentially videos each sample so that there were 120 seconds between videos of the sample. See report for more details of microscope and setup, etc.
+
+
 *Design Architecture:*
 
 *General outline:*
-Videos from microscope were given as .avi files and Teun Visser's tracking code (found as ENTER-URL) requires a tif image sequence as inputs so in folder BASHSCRIPTS are the files, written in Bash to convert avi files into image sequences. Also in here is a the python program labelImages.py which creates an image sequence with the tracked trajectories of the bacteria.
+Videos from microscope were given as .avi files and Teun Visser's tracking code (found at https://github.com/teunvissers/) requires a tif image sequence as inputs so in folder BASHSCRIPTS are the files, written in Bash to convert avi files into image sequences. Also in here is a the python program labelImages.py which creates an image sequence with the tracked trajectories of the bacteria.
 
 The file 'runTracking.sh' automatically runs all the tracking steps of Teun's tracking code and arranges them in the right folders.
 

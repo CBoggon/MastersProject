@@ -1,3 +1,17 @@
+#!python
+#
+###############################################################################
+#This code does not work!
+#
+#This program aimed to perform tracking on videos taken on glass surface (so in 2D) and automatically find the stopping events and lysis events. However, despite trying a number of different things (which explains what a lot of the obscure variables initialsed in the __init__ function were used for), I did not manage to get an automatic code working which was primarily due to the fact that the camera was not at a high enough resolution. See report for discussion of this. 
+#
+#As this program failed, I made the programs 'analyseLysisTracks.py', 'analyseLysisEvents.py' and 'readStopTimeFile.py' to manually search through videos, find stopping events and save these events. As this was right at the end of the project, this explains why these programs are pretty messy and not well written.
+#
+#WARNING: This code calls 'analyseSurfaceTracks' which doesn't exist.
+#
+###############################################################################
+
+
 #from matplotlib import pyplot as plt
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,6 +23,7 @@ import sys
 import os
 
 from analyseSurfaceTracks import analyseTrajectories
+## ^ I can't seem to find analyseSurfaceTracks so I either deleted it or, what I think is more likely, I changed the name to 'analyseLysisEvents.py' and that is what the rest of the stuff in that function is doing. Anyway, this program doesn't work so doesn't matter.
 
 
 ### Declare Variables
@@ -50,6 +65,7 @@ outputSaveFileDir = fileDir+'/trackingOutput/';
 try:
     os.stat(outputSaveFileDir)
 except:
+    #directory doesn't exist so creates one.
     os.mkdir(outputSaveFileDir);
 
 ### Initialise Array

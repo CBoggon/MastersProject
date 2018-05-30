@@ -1,3 +1,11 @@
+#
+#This is the core program to the analysis. Contains the main bulk of functions used for analysing trajectories stored in BIGLIST which is outputted by toolsforbugs.py.
+#
+#Called by: 
+#    runDDMTrackingAllFiles.py
+#
+
+
 #from matplotlib import pyplot as plt
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,208 +21,6 @@ import sys
 ##########################################################################################################
 
 class analyseTrajectories:
-
-#    def getLysisTrajectories(self, A, BIGLIST):
-#        #Get xPositions and yPositions from BIGLIST
-#        lysisTraj = [];
-#        lysisVelocityArray = [];
-#        nonLysisTraj = [];
-#        nonLysisVelocityArray = [];
-#
-#        #AvVelocityArray = np.zeros(len(BIGLIST));
-#        #displacementArrayByFrame = [];
-#        #velocityArrayByFrame = [];   #Array of velocities averaged over NumFramesToAverageOver
-#        i = 0;
-#        for i in range(0, len(BIGLIST)):   # iterate through trajectories
-#            if(len(BIGLIST[i]) < self.minTrajLen):
-#                continue;
-#            else:
-#                stopTime_frame, velocityArray, runningVelocityAverage, runningVelocityAverage_error, traj_frames = A.findLysisEvent(A, BIGLIST[i]);
-#                #Might need to remove zeroes from end of list.
-#                
-#                if (stopTime_frame != -1):
-#                    lysisTraj.append(i);
-#                    lysisVelocityArray.append(velocityArray);
-#
-#                else:
-#                    nonLysisTraj.append(i);
-#                    nonLysisVelocityArray.append(velocityArray);
-#        
-#        lysisTraj = np.asarray(lysisTraj);
-#        lysisVelocityArray = np.asarray(lysisVelocityArray);
-#        nonLysisVelocityArray = np.asarray(nonLysisVelocityArray);
-#        nonLysisVelocityArray = np.asarray(nonLysisVelocityArray);
-#
-#        return lysisTraj, lysisVelocityArray, nonLysisTraj, nonLysisVelocityArray 
-#
-#    
-#    def findLysisEvent(self, A, BIGLIST_traj):
-#        xPositions = BIGLIST_traj[:, 2]
-#        yPositions = BIGLIST_traj[:, 3]
-#        traj_frames = BIGLIST_traj[:, 0];
-#
-#        #Calculate distance travelled between frames
-#        displacementArray = A.calcDistBetweenPoints(xPositions, yPositions);
-#        
-#        #Calculate velocity at each frame
-#        velocityArray = displacementArray/self.timePerFrame;
-#
-#        #Calculate Running average Velocity
-#        runningVelocityAverage, runningVelocityAverage_error, runningVelocityBackwardsAverage, runningVelocityBackwardsAverage_error = A.calcRunningAverageVelocity(velocityArray);
-#        
-#        stopFrame = -1;
-#        for i in range (self.minStopTimeThreshold, len(velocityArray)-self.minStopTimeThreshold):   #Set self.minStopTimeThreshold as minimum amount of time a bacteria needs to have stopped to be considered a stopping event.
-#            if ((velocityArray[i] < self.stoppingVelocityThreshold*runningVelocityAverage[i-1]) and (velocityArray[i+1] < 1.5*self.stoppingVelocityThreshold*runningVelocityAverage[i-1]) and (np.mean(runningVelocityAverage[i:len(runningVelocityAverage)]) <= self.diffusionThreshold)):
-#                # Detected lysis event.
-#                stopFrame = i;
-#                timeStopped = len(velocityArray) - len(velocityArray[0:stopFrame]);
-#                print 'timeStopped = '+str(timeStopped)
-#                print 'stopFrame = '+str(stopFrame)
-#                #A.plotDataSetsWithErrorBars(traj_frames[1:len(traj_frames)], velocityArray, 'Velocity', None, traj_frames[2:len(traj_frames)], runningVelocityAverage, y1_error=runningVelocityAverage_error, label1='Average', title='Lysis Event', xlbl='frame', ylbl='Velocity');
-#            
-#                return stopFrame, velocityArray, runningVelocityAverage, runningVelocityAverage_error, traj_frames
-#
-#
-#        #StopFrame not updated, no lysis event detected.
-#        return stopFrame, velocityArray, runningVelocityAverage, runningVelocityAverage_error, traj_frames
-#
-#    
-#    def calcRunningAverageVelocity(self, velocityArray):
-#        '''
-#        Note: first average calculate with only 2 data sets.
-#        '''
-#        runningVelocityAverage = np.zeros(len(velocityArray)-1);
-#        runningVelocityAverage_error = np.zeros(len(velocityArray)-1);
-#        runningVelocityBackwardsAverage = np.zeros(len(velocityArray)-1);
-#        runningVelocityBackwardsAverage_error = np.zeros(len(velocityArray)-1);
-#        for i in range(0,len(runningVelocityAverage)):
-#            runningVelocityAverage[i] = np.mean(velocityArray[0:i+1]);
-#            runningVelocityAverage_error[i] = np.std(velocityArray[0:i+1])/np.sqrt(len(velocityArray[0:i+1]))   #error = error on the mean = sigma/sqrt(N)
-#            
-#            runningVelocityBackwardsAverage[i] = np.mean(velocityArray[len(runningVelocityAverage)-i-1:len(runningVelocityAverage)]);
-#            runningVelocityBackwardsAverage_error[i] = np.std(velocityArray[len(runningVelocityAverage)-i-1:len(runningVelocityAverage)])/np.sqrt(len(velocityArray[len(runningVelocityAverage)-i-1:len(runningVelocityAverage)]))   #error = error on the mean = sigma/sqrt(N)
-#
-#        return runningVelocityAverage, runningVelocityAverage_error, runningVelocityBackwardsAverage, runningVelocityBackwardsAverage_error
-#
-#
-#    
-#    def plotTrajWithSpecificID(self, A, BIGLIST, ID, plotRodLength=0):
-#        
-#        # Ensure BIGLIST[ID] exists.
-#        try:
-#            print 'Found trajectory beginning at frame '+str(BIGLIST[ID][0, 0]);
-#            
-#        # Throw error if BIGLIST[ID] does not exist.
-#        except:
-#            print 'ERROR: No trajectory identified. Trajectory ID '+str(ID)+' does not exist in frame '+str(frame);
-#            return
-#
-#        stopTime_frame, velocityArray, runningVelocityAverage, runningVelocityAverage_error, traj_frames = A.findLysisEvent(A, BIGLIST[ID]);
-#        
-#        #Convert data to units of micrometers and seconds.
-#        velocityArray = self.pixelsToMicrons*velocityArray;
-#        runningVelocityAverage = self.pixelsToMicrons*runningVelocityAverage;
-#        runningVelocityAverage_error = self.pixelsToMicrons*(runningVelocityAverage_error/runningVelocityAverage);
-#        #traj_frames = self.timePerFrame*traj_frames;
-#
-#
-#        if (plotRodLength == 0):
-#
-#            A.plotDataSetsWithErrorBars(traj_frames[1:len(traj_frames)], velocityArray, 'Velocity', np.array(None), traj_frames[2:len(traj_frames)], runningVelocityAverage, y1_error=runningVelocityAverage_error, label1='Running Average', title='Lysis Event', xlbl='frame ('+str(self.timePerFrame)+' seconds/frame)', ylbl='Velocity (micrometers/second)');
-#
-#            return
-#
-#        else:
-#            rodLengthArray = self.pixelsToMicrons*BIGLIST[ID][:, 6];
-#            
-#            #Fit straight line to these lengths
-#            M,C = curve_fit(A.fitStraightline, traj_frames[0:len(traj_frames)], rodLengthArray)[0]
-#            rodLengthFit = M*traj_frames[0:len(traj_frames)] + C;
-#
-#            #Plot velocity array and running average velocity with error
-#            A.plotDataSetsWithErrorBars(traj_frames[1:len(traj_frames)], velocityArray, 'Velocity', np.array(None), traj_frames[2:len(traj_frames)], runningVelocityAverage, y1_error=runningVelocityAverage_error, label1='Running Average', title='Lysis Event', xlbl='frame ('+str(self.timePerFrame)+' seconds/frame)', ylbl='Velocity (micrometers/second)');
-#            
-#            #Plot rod length
-#            A.plotDataSetsWithErrorBars(traj_frames[0:len(traj_frames)], rodLengthArray, 'Length', np.array(None), traj_frames[0:len(traj_frames)], rodLengthFit, label1='Fit', title='Bacteria Lengths through trajectory', xlbl='frame ('+str(self.timePerFrame)+' seconds/frame)', ylbl='Rod Length (micrometers)');
-#                
-#            return
-#
-#
-#    def fitStraightline(self, x, M, C): # this is your 'straight line' y=f(x)
-#        return M*x + C
-#        
-
-#    def calcMSD(self, F, y, x, n, N):
-#	r = F.calcDisplacement(y, x);
-#	print('N = '+str(N));
-#	print('len(r) = '+str(len(r)));
-#	MSDCumulative = np.zeros((N-1,len(x[0])));
-#	MSD = np.zeros(len(r[0]));
-#	for i in range(0,len(x[0])):
-#	    for j in range(0,N-1):
-#		MSD[i] = MSD[i] + (n/N)*(r[j+1][i] - r[j][i])**2;
-#		MSDCumulative[j][i] = MSD[i];
-#	return MSD, MSDCumulative;
-#
-#    # Calculate the displacement of a particle in microns given cartesian data points.
-#    def calcDisplacement(self, y, x):
-#	r = np.zeros((len(x), len(x[0])));  #r = [no. points in trajectory][particle number]
-#	for j in range(0,len(x)):
-#	    for i in range(0,len(x[0])):
-#		r[j][i] = np.sqrt(x[j][i]**2 + y[j][i]**2);
-#	return r
-#
-#    # To find the average mean squared displacement
-#    def averageMSD(self, MSDData):
-#	meanMSD = np.zeros(len(MSDData));
-#	for j in range(0, len(MSDData)):
-#	    print(j)
-#	    accumulator = 0;
-#	    for i in range(0, len(MSDData[0])-1):
-#		accumulator = accumulator + MSDData[j][i];
-#		#array[j] = np.nansum([array[j], im[im.columns[j]][i]])
-#		#array[j] = array[j]+im[im.columns[j]][i];
-#		#print(array)
-#	    meanMSD[j] = accumulator/len(MSDData[0]);    #Calculate average of array
-#	return meanMSD
-#
-#    def checkTrajUniformity(self, A, BIGLIST):
-#        '''
-#        To check trajectories are roughly uniform so that it is reasonable to calculate average velocity from average displacements over entire length of trajectory.
-#        Is there is a significant gradient in the data, this would not be reasonable.
-#        This might happen if the particles are slowing down fast enough during the trajectory.
-#
-#        Calls: 
-#            - plotDataSets
-#
-#        Returns: Nothing
-#        '''
-#        trajList = [];
-#        i = 0;
-#        while(i < 5):
-#            temp = BIGLIST[int(len(BIGLIST)*np.random.uniform())];
-#            if(len(temp) < self.minTrajLen):
-#                continue;
-#            else:
-#                trajList.append(temp);
-#                i = i+1;
-#
-##        traj0 = np.asarray(trajList[0]);
-##        traj1 = np.asarray(trajList[1]);
-##        traj2 = np.asarray(trajList[2]);
-##        traj3 = np.asarray(trajList[3]);
-##        traj4 = np.asarray(trajList[4]);
-#        
-#        AvVelocityArray_traj0, displacementArray_SeveralFrames_traj0 = A.calcAverageParticleVelocity(A, np.asarray(trajList[0]));
-#        AvVelocityArray_traj1, displacementArray_SeveralFrames_traj1 = A.calcAverageParticleVelocity(A, np.asarray(trajList[1]));
-#        AvVelocityArray_traj2, displacementArray_SeveralFrames_traj2 = A.calcAverageParticleVelocity(A, np.asarray(trajList[2]));
-#        AvVelocityArray_traj3, displacementArray_SeveralFrames_traj3 = A.calcAverageParticleVelocity(A, np.asarray(trajList[3]));
-#        AvVelocityArray_traj4, displacementArray_SeveralFrames_traj4 = A.calcAverageParticleVelocity(A, np.asarray(trajList[4]));
-#
-#        A.plotDataSets(np.arange(len(displacementArray_SeveralFrames_traj0)), displacementArray_SeveralFrames_traj0, 'traj0', x1=np.arange(len(displacementArray_SeveralFrames_traj1)), y1=displacementArray_SeveralFrames_traj1, label1='traj1', x2=np.arange(len(displacementArray_SeveralFrames_traj2)), y2=displacementArray_SeveralFrames_traj2, label2='traj2', x3=np.arange(len(displacementArray_SeveralFrames_traj3)), y3=displacementArray_SeveralFrames_traj3, label3='traj3', x4=np.arange(len(displacementArray_SeveralFrames_traj4)), y4=displacementArray_SeveralFrames_traj4, label4='traj4', xlbl='Iteration (iterates over '+str(self.NumFramesToAverageOver)+' Frame(s))', ylbl='Displacement Over '+str(self.NumFramesToAverageOver)+' Frame (pixels)');
-#
-#        return
-#
 
     def __init__(self, minTrajLen, NumFramesToAverageOver, timePerFrame, pixelsToMicrons, minStopTimeThreshold, minStopVelocityThreshold, initialFrameNum, stoppingVelocityThreshold, diffusionThreshold, minSwimmingExponent, minTauVals, BacteriaCounterFrame):
         self.timePerFrame = timePerFrame;   #For calculating the average velocity over one frame
@@ -236,6 +42,7 @@ class analyseTrajectories:
     def calcAverageVelocitiesForAllTraj(self, A, BIGLIST):        
         '''
         Note: This assumes the particles behave uniformly throughout the course of the trajectory i.e they do not slow down.
+              This is the first function called by the master which then calls other functions in this file to calculate the velocity of swimmers. 
         
         Calls:
             - calcAverageParticleVelocity
@@ -253,17 +60,19 @@ class analyseTrajectories:
         k_exponentArray = [];
         NBacteriaCounter = 0;
         i = 0;
-        for i in range(0, len(BIGLIST)):   # iterate through trajectories
+        for i in range(0, len(BIGLIST)):   # iterate through all trajectories contained in BIGLIST.
             if(len(BIGLIST[i]) < self.minTrajLen):
                 continue;
             else:
                 if (A.isInCounterFrame(BIGLIST[i]) == True):
-                    #Count bacterium.
+                    #This branch is used to count the number of bacteria tracked within one frame of the video. If I counted the total number of tracked bacteria and then averaged over the number of frames, I would double count bacteria because the trajectories get broken up so much. So better to just count the number of bacteria in one frame for each video.
+                    #Count bacterium. 
                     NBacteriaCounter = NBacteriaCounter+1;
 
                 temp_avVelocityAllTraj, temp_displacementArray, temp_velocityArray, k_exponent = A.calcAverageParticleVelocity(A, BIGLIST[i]);
                 
                 if (k_exponent == -10):
+                    # Curve fit failed when trying to differentiate between swimmers and diffusers so do not want to save this data.
                     print 'k-exponent curve fit failed for trajID = '+str(i);
                     continue;
                 
@@ -272,7 +81,7 @@ class analyseTrajectories:
                     print 'Velocity curve fit failed for trajID = '+str(i);
                     continue;
                 
-                #Particle swimming
+                #This particle is swimming
                 elif (k_exponent > self.minSwimmingExponent):
                     avVelocityAllTraj.append(temp_avVelocityAllTraj);
                     displacementArray.append(temp_displacementArray);
@@ -281,7 +90,7 @@ class analyseTrajectories:
                     k_exponentArray.append(k_exponent);
                
                 else:
-                    #Particle either diffusing or an erroneous point from the tracking
+                    #Particle either diffusing or an erroneous point from the tracking. Videos taken in bulk so there are no adherers.
                     k_exponentArray.append(k_exponent);
                     continue
 
@@ -339,13 +148,13 @@ class analyseTrajectories:
         k_exponent = A.separateDiffusersAndSwimmers(A, meanSquaredDispArray, tauArray);
         
         if (k_exponent < self.minSwimmingExponent):
-            #Non Swimmer so no point continuing to calculate velocity. Return error.
+            #Non Swimmer so no point continuing to calculate velocity. Return error. SHOULD THIS NOT RETURN -10 ???
             return -11, displacementArray, velocityArray, k_exponent
         
-        #Calculate average velocity by fitting to mean squared displacement function. This method accounts for pixel bias.
+        #Calculate average velocity by fitting to mean squared displacement function. This method accounts for pixel bias (see function for details). This method was found to give even noisier results just because my trajectories were very noisy (see report for details).
         #AvVelocity = A.fitVelocities(A, meanSquaredDispArray, tauArray);
 
-        #Calculate average velocity and distance travelled by particle -- OLD METHOD FOR CALCULATING VELOCITY
+        #Calculate average velocity and distance travelled by particle.
         AvDisplacement = np.mean(displacementArray);
         AvDisplacement_error = np.std(displacementArray)/np.sqrt(len(displacementArray));   #Standard error on mean
         
@@ -359,7 +168,7 @@ class analyseTrajectories:
 
     def calcMeanSquaredDisplacement(self, xPositions, yPositions):
         '''
-        Calculated mean squared displacement as a function of tau.
+        Calculates mean squared displacement as a function of tau (time between successive frames). See report (I think it is in the appendix) for details of this algorithm.
         
         Returns: array of average mean squared velocities with increasing values of tau.
         '''
@@ -450,6 +259,13 @@ class analyseTrajectories:
 
 
     def separateDiffusersAndSwimmers(self, A, meanSquaredDisplacementArray, tauArray):
+        '''
+        This function performs curve fit to equation: <R^2> = C t^k, and returns the value of k. Theoretically, k = 0,1,2 for adherers, diffusers and swimmers respectively. This was the method Teun Vissers used in his paper 'Bacteria as living patchy colloids: Phenotypic heterogeneity in surface adhesion'.
+        
+        Calls: nothing
+
+        Returns: k
+        '''
         
         t = tauArray*self.timePerFrame;
         #t = self.timePerFrame*3*self.NumFramesToAverageOver*np.arange(len(cumulativeMeanSquaredDisplacementArray));
@@ -473,6 +289,7 @@ class analyseTrajectories:
                 #b = best_vals[2];
                 #print 'k-exponent fit values; C = %f, k = %f' % tuple(best_vals)
             
+            # Add exception if curve fit fails which happened quite often. Returns -10 so after this function is called, I remove data with k=-10.
             except RuntimeError:
                 print("Optimal parameters not found: Number of calls to function has reached maxfev = 600.\n");
                 k = -10; 
@@ -904,6 +721,10 @@ class analyseTrajectories:
         return
     
     def plotHistogramWithCurveFit(self, A, data, xlbl='bins', ylbl='Frequency', fit='schulz'):
+        '''
+        Plots histogram as bar chart with curve fit line on same figure. Good for visualising quality of fit.
+        '''
+        
         popt_RuntimeError = [-10, -10, -10];
 	sigma_RuntimeError = -10;
 
@@ -1042,7 +863,11 @@ class analyseTrajectories:
 
     # Plot data sets with two different y values so y axes on left and right hand side plot
     def plotDataWithTwoYAxes(self, x0_L, y0_L, label0_L, y0_L_error=np.array(None), x1_L=np.array(None), y1_L=np.array(None), y1_L_error=np.array(None), label1_L=None, x0_R=np.array(None), y0_R=np.array(None), y0_R_error=np.array(None), label0_R=None, x1_R=np.array(None), y1_R=np.array(None), y1_R_error=np.array(None), label1_R=None, title=None, xlbl=None, ylbl_L=None, ylbl_R=None, plotLegend=True):
-        
+
+        '''
+        This was an attempt to plot two sets of data with two y axes but I didn't get it to work correctly with my input data and ran out of time. In principle it can be done though.
+        '''
+
         plt.figure(figsize=(10, 6));
         plt.rc('font', family='serif', size=15);
 

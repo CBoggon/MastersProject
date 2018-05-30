@@ -1,3 +1,10 @@
+#!python
+#
+###############################################################################
+#Program reads in text files containing data from DDM (given to me by Vincent Martinez) and plots data.
+#
+###############################################################################
+
 #from matplotlib import pyplot as plt
 import numpy as np
 import matplotlib.pyplot as plt
